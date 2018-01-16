@@ -2,6 +2,8 @@ package roboter;
 
 import java.text.DecimalFormat;
 
+import dynamixel.Dynamixel;
+
 public class robot {
     public static final String version = "robot 0.3b";
     public static final double B1_DIAMATER = 52.5f * 2;
@@ -30,7 +32,81 @@ public class robot {
 
     public String moveStr;
 
+    // Dynamixel stuff
+    // Control table address
+    short ADDR_MX_TORQUE_ENABLE = 24; // Control table address is different in Dynamixel model
+    short ADDR_MX_GOAL_POSITION = 30;
+    short ADDR_MX_PRESENT_POSITION = 36;
+
+    // Protocol version
+    int PROTOCOL_VERSION = 1; // See which protocol version is used in the Dynamixel
+
+    // Default setting
+    byte DXL_ID = 4; // Dynamixel ID: 1
+    int BAUDRATE = 1000000;
+    String DEVICENAME = "COM5"; // Check which port is being used on your controller
+				// ex) Windows: "COM1" Linux: "/dev/ttyUSB0" Mac: "/dev/tty.usbserial-*"
+
+    byte TORQUE_ENABLE = 1; // Value for enabling the torque
+    byte TORQUE_DISABLE = 0; // Value for disabling the torque
+    int DXL_MOVING_STATUS_THRESHOLD = 50; // Dynamixel moving status threshold
+
+    int COMM_SUCCESS = 0; // Communication Success result value
+    int COMM_TX_FAIL = -1001; // Communication Tx Failed
+
+    // Dynamixel stuff
+    Dynamixel dynamixel;
+    int port_num;
+    int dxl_comm_result;
+    byte dxl_error;
+    short dxl_present_position;
+
     public robot() {
+	// Dynamixel stuff
+
+	// Initialize Dynamixel class for java
+	dynamixel = new Dynamixel();
+
+	// Initialize PortHandler Structs
+	// Set the port path
+	// Get methods and members of PortHandlerLinux or PortHandlerWindows
+	port_num = dynamixel.portHandler(DEVICENAME);
+
+	// Initialize PacketHandler Structs
+	dynamixel.packetHandler();
+
+	dxl_comm_result = COMM_TX_FAIL; // Communication result
+
+	dxl_error = 0; // Dynamixel error
+	dxl_present_position = 0; // Present position
+
+	// Open port
+	if (dynamixel.openPort(port_num)) {
+	    System.out.println("Succeeded to open the port!");
+	} else {
+	    System.out.println("Failed to open the port!");
+	    // fullStop();
+	}
+
+	// Set port baudrate
+	if (dynamixel.setBaudRate(port_num, BAUDRATE)) {
+	    System.out.println("Succeeded to change the baudrate!");
+	} else {
+	    System.out.println("Failed to change the baudrate!");
+	    // fullStop();
+	}
+
+	// Enable Dynamixel Torque
+	dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID, ADDR_MX_TORQUE_ENABLE, TORQUE_ENABLE);
+	if ((dxl_comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION)) != COMM_SUCCESS) {
+	    System.out.println(dynamixel.getTxRxResult(PROTOCOL_VERSION, dxl_comm_result));
+	} else if ((dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION)) != 0) {
+	    System.out.println(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error));
+	} else {
+	    System.out.println("Dynamixel has been successfully connected");
+	}
+
+	// diffrent stuff
 	LOGO = new logo(1);
 
 	m1 = new motor();
@@ -352,7 +428,7 @@ public class robot {
 	double h = punkt.betrag(new punkt(0, 0, 0), new punkt(Zielpunkt.getX(), Zielpunkt.getY(), 0));
 	double d = Math.sqrt(Zielpunkt.getZ() * Zielpunkt.getZ() + (h - a) * (h - a));
 
-	double grad1, grad2, grad3;
+	short grad1, grad2, grad3;
 
 	// Winkel Motor 1
 	if (Zielpunkt.getX() == 0) {
@@ -365,13 +441,13 @@ public class robot {
 	    phi = (double) (phi * 180 / Math.PI);
 
 	    if (quadrant(Zielpunkt) == 1) {
-		grad1 = phi;
+		grad1 = (short) phi;
 	    } else if (quadrant(Zielpunkt) == 2) {
-		grad1 = 180 - phi;
+		grad1 = (short) (180 - phi);
 	    } else if (quadrant(Zielpunkt) == 3) {
-		grad1 = 180 + phi;
+		grad1 = (short) (180 + phi);
 	    } else if (quadrant(Zielpunkt) == 4) {
-		grad1 = 360 - phi;
+		grad1 = (short) (360 - phi);
 	    } else {
 		if (Zielpunkt.getY() >= 0)
 		    grad1 = 90;
@@ -381,14 +457,15 @@ public class robot {
 	}
 
 	// Winkel Motor 2
-	grad2 = (Math.cos(-((c * c - punkt.betrag(new punkt(a, 0, 0), new punkt(h, Zielpunkt.getZ(), 0)) - b * b)
-		/ (2 * punkt.betrag(new punkt(a, 0, 0), new punkt(h, Zielpunkt.getZ(), 0)) - b * b * b))))
-		+ (Math.cos((h - a) / d));
+	grad2 = (short) ((short) (Math
+		.cos(-((c * c - punkt.betrag(new punkt(a, 0, 0), new punkt(h, Zielpunkt.getZ(), 0)) - b * b)
+			/ (2 * punkt.betrag(new punkt(a, 0, 0), new punkt(h, Zielpunkt.getZ(), 0)) - b * b * b))))
+		+ (Math.cos((h - a) / d)));
 
-	grad2 = (double) (grad2 * 180 / Math.PI);
+	grad2 = (short) (grad2 * 180 / Math.PI);
 
 	// Winkel Motor 3
-	grad3 = Math.cos(-(d * d - b * b - c * c) / (2 * b * c));
+	grad3 = (short) Math.cos(-(d * d - b * b - c * c) / (2 * b * c));
 
 	/*
 	 * Math.cos(-(((Math.sqrt(Zielpunkt.getX() * Zielpunkt.getX() + Zielpunkt.getY()
@@ -396,7 +473,7 @@ public class robot {
 	 * Zielpunkt.getY() * Zielpunkt.getY()) - a) - b * b - c * c) / (2 * b * c));
 	 */
 
-	grad3 = (double) (grad3 * 180 / Math.PI);
+	grad3 = (short) (grad3 * 180 / Math.PI);
 
 	System.out.println("----------------\nCONSOLE-LOG\n----------------");
 	System.out.println("Winkelwerte:\n");
@@ -404,18 +481,29 @@ public class robot {
 	System.out.println("M2: " + grad2);
 	System.out.println("M3: " + grad3);
 	System.out.println("----------------\n");
-	
+
 	DecimalFormat f = new DecimalFormat("0.00");
 
-	StringBuffer strbf = new StringBuffer("Winkelwerte:\n" + "M1: " + f.format(grad1) +"°\nM2: " + f.format(grad2) + "°\nM3: " + f.format(grad3) + "°");
+	StringBuffer strbf = new StringBuffer("Winkelwerte:\n" + "M1: " + f.format(grad1) + "°\nM2: " + f.format(grad2)
+		+ "°\nM3: " + f.format(grad3) + "°");
 
 	moveStr = strbf.toString();
 
 	// Bewegungsausführung
-	m1.move(grad1);
-	m2.move(grad2);
-	m3.move(grad3);
+	/*
+	 * old m1.move(grad1); m2.move(grad2); m3.move(grad3);
+	 */
+	
+	System.out.println(grad1*0.311);
+	
+	grad1*=0.311;
 
+	if (grad1 >= 10 || grad1 <= 900)
+	    dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID, ADDR_MX_GOAL_POSITION, grad1);
+
+	else
+	    System.out.println("ERRRORRRRR");
+	
 	changed = true;
 
 	// Wenn beendet
