@@ -173,7 +173,6 @@ public class Software extends JFrame {
 	    }
 	});
 	btnAusfuehren.setBounds(66, 145, 119, 23);
-	btnAusfuehren.setEnabled(false);// is currently disabeld
 	contentPane.add(btnAusfuehren);
 
 	// button Simulieren
@@ -302,7 +301,7 @@ public class Software extends JFrame {
     }
 
     // simulates movment
-    private void simulate() {
+    private punkt simulate() {
 	int x, y, z;// var. for coordinates
 	boolean statusausgabe = rdbtnStatusausgaben.isSelected();
 	boolean fehlermeldung = rdbtnFehlermeldungen.isSelected();
@@ -448,7 +447,7 @@ public class Software extends JFrame {
 		textArea.append(
 			"Der Ablauf wird Simuliert für eine Bewegung zum Punkt P(" + x + "|" + y + "|" + z + ")\n\n");
 
-	    myRobot.moveto(p);// starts the simulation by calling the moveto methode of robot class
+	   // myRobot.moveto(p);// starts the simulation by calling the moveto methode of robot class
 
 	    // angle output
 	    if (statusausgabe) {
@@ -458,6 +457,8 @@ public class Software extends JFrame {
 
 	    tfX.requestFocus();
 	    tfX.selectAll();
+	    
+	    return p;
 	}
 	// error handling
 	catch (EmptyInputException e) {
@@ -494,23 +495,18 @@ public class Software extends JFrame {
 
 	    e.printStackTrace();
 	} finally {
-	    System.gc();// garbag collector
+	    //currently disabeld
+	   // System.gc();// garbag collector
 	}
+	return null;
 
     }
 
     // methode which will call the robot (not implimented and currently disabeld)
     private void perform() {
-	int x, y, z;// var. for coordinates
-	boolean statusausgabe = rdbtnStatusausgaben.isSelected();
-	boolean fehlermeldung = rdbtnFehlermeldungen.isSelected();
-	boolean autokorrektur = rdbtnAutokorrektur.isSelected();
-
-	if (rdbtnStatusausgaben.isSelected())
-	    textArea.append("Ausführen ist noch nicht implimentiert\n\n");
-
-	if (rdbtnFehlermeldungen.isSelected())
-	    JOptionPane.showMessageDialog(null, "Ausführen ist noch nicht implimentiert");
+	punkt p = simulate();
+	
+	myRobot.moveto(p);
     }
 
     // radioButton Statusausgabe control
@@ -559,7 +555,11 @@ public class Software extends JFrame {
 
     // closes program
     private void close() {
-	textArea.append("Beende Programm\n}n");
+	textArea.append("Beende Programm\n");
 	System.exit(0);
+    }
+
+    public void fullStop() {
+	textArea.append("Kein Kommunikation zu Roboter möglich\n");
     }
 }
