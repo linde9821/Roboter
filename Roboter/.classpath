@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/aix-ppc.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/aix-ppc64.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/android-aarch64.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/android-arm.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/android-armv7.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/android-mips.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/android-mips64.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/android-x86.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/android-x86-64.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/darwin.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/freebsd-x86.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/freebsd-x86-64.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/linux-aarch64.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/linux-arm.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/linux-armel.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/linux-ia64.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/linux-mips64el.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/linux-ppc.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/linux-ppc64.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/linux-ppc64le.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/linux-s390x.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/linux-sparcv9.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/linux-x86.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/linux-x86-64.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/openbsd-x86.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/openbsd-x86-64.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/out-of-date.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/sunos-sparc.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/sunos-sparcv9.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/sunos-x86.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/sunos-x86-64.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/w32ce-arm.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/win32-x86.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/win32-x86-64.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/test/dom4j-1.6.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/test/guava-11.0.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/test/javassist-3.12.1.GA.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/test/reflections-0.9.8.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/test/slf4j-api-1.6.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/ant.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/bsh.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/clover.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/hamcrest-core-1.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/junit.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/maven-ant-tasks-2.1.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/DynamixelSDK-master/java/dynamixel_functions_java/x64"/>
+	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-4.5.0.jar"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/libary"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
