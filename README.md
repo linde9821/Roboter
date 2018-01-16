@@ -5,4 +5,5 @@ The source codes in the dynamixel package is basically the code provided by Dyna
 
 We are using the dynamixel AX-12A servo, the USB2AX v3.2b controller and RoboPlus software.
 
+Right now it is still in development and not fully working.
 Some parts of the project are currently partially written in german. It planned to update those.
