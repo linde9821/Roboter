@@ -288,11 +288,11 @@ public class robot {
 	public void testausgabe() {
 		System.out.print("Testausgabe:\n");
 
-		System.out.print("Roboter in verÃ¤nderter Position: " + changed + "\n");
+		System.out.print("Roboter in veränderter Position: " + changed + "\n");
 
 		System.out.println("\nB1-Durchmesser: " + B1_DIAMATER);
-		System.out.println("\nB2-LÃ¤nge: " + B2_LENGTH);
-		System.out.println("\nB3-LÃ¤nge: " + B3_LENGTH);
+		System.out.println("\nB2-Länge: " + B2_LENGTH);
+		System.out.println("\nB3-Länge: " + B3_LENGTH);
 		System.out.println("\nMinimaler Winkel zwischen B2 und B3: " + MIN_ANGEL_B2_B3);
 		System.out.println("\nBodenebene: " + -BODENEBENE);
 		System.out.println("\nMaxmimale Spannweite: " + MAX_LENGTH);
@@ -333,7 +333,7 @@ public class robot {
 	public void statusausgabe() {
 		System.out.print("Statusausgabe\n");
 
-		System.out.print("Roboter in verÃ¤nderter Position: " + changed + "\n\n");
+		System.out.print("Roboter in veränderter Position: " + changed + "\n\n");
 
 		if (changed == true) {
 			System.out.print("Bauteil 1: \n");
@@ -421,12 +421,15 @@ public class robot {
 		if (ansteuerbarkeit(Zielpunkt) == false)
 			return false;
 
-		double h = Math.sqrt(x * x + y * y);
+		double h = Math.sqrt(Zielpunkt.getX() * Zielpunkt.getX() + Zielpunkt.getY() * Zielpunkt.getY());
 		double a = B1_DIAMATER / 2;
-		double d = Math.sqrt((h - a) * (h - a) + (z * z));// Abstand Punkt P zu A
-		short grad1, grad2, grad3;
+		double d = Math.sqrt((h - a) * (h - a) + (Zielpunkt.getZ() * Zielpunkt.getZ()));// Abstand Punkt P zu A
+		double grad1, grad2, grad3;
 
-		grad3 = Math.acos((b * b + c * c - d * d) / (2 * b * c));// Untersuchen wie ArcCos funktioniert
+		double b =  B2_LENGTH;
+		double c = B3_LENGTH;
+		
+		grad3 =  Math.acos((((b * b) + (c * c) - (d * d)) / (2 * b * c)));// Untersuchen wie ArcCos funktioniert
 
 		/*
 		 * // Winkelberechnung der Motoren double a = B1_DIAMATER / 2; double b =
@@ -464,23 +467,21 @@ public class robot {
 
 		// Winkel Motor 2
 		
-		short g1, g2;
-		g1 = Math.acos(B2_LENGTH*B2_LENGTH + d * d - B3_LENGTH * B3_LENGTH)/(2*B2_LENGTH*B3_LENGTH);
-		g2 = Math.asin(Zielpunkt.getZ()/d);//BETRAG VON Z nehmen 
+		double g1, g2;
+		g1 =  Math.acos((B2_LENGTH*B2_LENGTH + d * d - B3_LENGTH * B3_LENGTH)/(2*B2_LENGTH*B3_LENGTH));
+		g2 =  Math.asin(Zielpunkt.getZ()/d);//BETRAG VON Z nehmen 
 		
-		g1 = (g1*180)/Math.PI;
-		g2 = (g2*180)/Math.PI;
+		g1 =  ((g1*180)/Math.PI);
+		g2 =  ((g2*180)/Math.PI);
 		
-		grad2= 180 + g1 + g2;
+		grad2=  (180 + g1 + g2);
 		/*
 		grad2 =(Math
 				.cos(-((c * c - punkt.betrag(new punkt(a, 0, 0), new punkt(h, Zielpunkt.getZ(), 0)) - b * b)
 						/ (2 * punkt.betrag(new punkt(a, 0, 0), new punkt(h, Zielpunkt.getZ(), 0)) - b * b * b))))
 				+ (Math.cos((h - a) / d)));
-
 		
 		grad2 = (short) (grad2 * 180 / Math.PI);
-
 */
 		/*
 		 * Math.cos(-(((Math.sqrt(Zielpunkt.getX() * Zielpunkt.getX() + Zielpunkt.getY()
@@ -488,7 +489,7 @@ public class robot {
 		 * Zielpunkt.getY() * Zielpunkt.getY()) - a) - b * b - c * c) / (2 * b * c));
 		 */
 
-		grad3 = (short) (grad3 * 180 / Math.PI);
+		grad3 =  (grad3 * 180 / Math.PI);
 
 		System.out.println("----------------\nCONSOLE-LOG\n----------------");
 		System.out.println("Winkelwerte:\n");
@@ -499,12 +500,12 @@ public class robot {
 
 		DecimalFormat f = new DecimalFormat("0.00");
 
-		StringBuffer strbf = new StringBuffer("Winkelwerte:\n" + "M1: " + f.format(grad1) + "Â°\nM2: " + f.format(grad2)
-				+ "Â°\nM3: " + f.format(grad3) + "Â°");
+		StringBuffer strbf = new StringBuffer("Winkelwerte:\n" + "M1: " + f.format(grad1) + "°\nM2: " + f.format(grad2)
+				+ "°\nM3: " + f.format(grad3) + "°");
 
 		moveStr = strbf.toString();
 
-		// BewegungsausfÃ¼hrung
+		// Bewegungsausführung
 		/*
 		 * old m1.move(grad1); m2.move(grad2); m3.move(grad3);
 		 */
@@ -521,10 +522,10 @@ public class robot {
 		System.out.println("----------------\n");
 
 		if (grad1 >= 10 || grad1 <= 900)
-			dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID, ADDR_MX_GOAL_POSITION, grad1);
+			//dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID, ADDR_MX_GOAL_POSITION, grad1);
 
-		else
-			System.out.println("ERRRORRRRR");
+		//else
+			//System.out.println("ERRRORRRRR");
 
 		changed = true;
 
@@ -533,12 +534,12 @@ public class robot {
 	}
 
 	/*
-	 * Operation ausfÃ¼hren //"Werkzeug" bool operation() {
+	 * Operation ausführen //"Werkzeug" bool operation() {
 	 * 
 	 * }
 	 */
 
-	public boolean zurÃ¼cksetzten() {
+	public boolean zurücksetzten() {
 		/*
 		 * Alte Variante jedoch sollte diese auch noch getestet werden
 		 * m1.move(-m1.get_last_change()); m2.move(-m2.get_last_change());
