@@ -81,7 +81,7 @@ public class Software extends JFrame {
      */
     public Software() {
 	setFont(new Font("Arial", Font.PLAIN, 12));
-	setIconImage(Toolkit.getDefaultToolkit().getImage(Software.class.getResource("/pdf_res/logo1.png")));// load
+	//setIconImage(Toolkit.getDefaultToolkit().getImage(Software.class.getResource("/pdf_res/logo1.png")));// load
 													     // icon
 
 	// auto resizeing of the textArea
@@ -156,7 +156,7 @@ public class Software extends JFrame {
 	contentPane.add(tfZ);
 	tfZ.setColumns(10);
 
-	// button Ausführen
+	// button AusfÃ¼hren
 	btnAusfuehren = new JButton("Ausf\u00FChren");
 	btnAusfuehren.setBackground(SystemColor.controlShadow);
 	btnAusfuehren.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -194,7 +194,7 @@ public class Software extends JFrame {
 	btnSimulieren.setBounds(66, 111, 119, 23);
 	contentPane.add(btnSimulieren);
 
-	// button Schließen
+	// button SchlieÃŸen
 	btnClose = new JButton("Schlie\u00DFen");
 	btnClose.setBackground(SystemColor.controlShadow);
 	btnClose.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -314,17 +314,17 @@ public class Software extends JFrame {
 	    // checks for empty Input
 	    if (tfX.getText().equals("")) {
 		tfX.requestFocus();
-		throw new EmptyInputException("Keine Wert für die X-Koordinate");
+		throw new EmptyInputException("Keine Wert fÃ¼r die X-Koordinate");
 	    }
 
 	    if (tfY.getText().equals("")) {
 		tfY.requestFocus();
-		throw new EmptyInputException("Keine Wert für die Y-Koordinate");
+		throw new EmptyInputException("Keine Wert fÃ¼r die Y-Koordinate");
 	    }
 
 	    if (tfZ.getText().equals("")) {
 		tfZ.requestFocus();
-		throw new EmptyInputException("Keine Wert für die Z-Koordinate");
+		throw new EmptyInputException("Keine Wert fÃ¼r die Z-Koordinate");
 
 	    }
 
@@ -429,7 +429,7 @@ public class Software extends JFrame {
 		    y = Integer.parseInt(ctry.getSuggestedInput());
 		    z = Integer.parseInt(ctrz.getSuggestedInput());
 		} else // if not usabel: throws ControlInputException
-		    throw new ControlInputException("Keine Autokorrektur möglich");
+		    throw new ControlInputException("Keine Autokorrektur mÃ¶glich");
 	    } else {// reading the values without autocorrection
 		x = Integer.parseInt(tfX.getText());
 		y = Integer.parseInt(tfY.getText());
@@ -445,7 +445,7 @@ public class Software extends JFrame {
 
 	    if (statusausgabe)
 		textArea.append(
-			"Der Ablauf wird Simuliert für eine Bewegung zum Punkt P(" + x + "|" + y + "|" + z + ")\n\n");
+			"Der Ablauf wird Simuliert fÃ¼r eine Bewegung zum Punkt P(" + x + "|" + y + "|" + z + ")\n\n");
 
 	   // myRobot.moveto(p);// starts the simulation by calling the moveto methode of robot class
 
@@ -481,10 +481,10 @@ public class Software extends JFrame {
 		JOptionPane.showMessageDialog(null, e.getMessage());
 	} catch (NumberFormatException e) {
 	    if (statusausgabe)
-		textArea.append("Bitte überprüfen Sie die Eingegeben Koordinatenwerte\n\n");
+		textArea.append("Bitte Ã¼berprÃ¼fen Sie die Eingegeben Koordinatenwerte\n\n");
 
 	    if (fehlermeldung)
-		JOptionPane.showMessageDialog(null, "Bitte überprüfen Sie die Eingegeben Koordinatenwerte");
+		JOptionPane.showMessageDialog(null, "Bitte Ã¼berprÃ¼fen Sie die Eingegeben Koordinatenwerte");
 
 	} catch (Exception e) {
 	    if (statusausgabe)
@@ -560,6 +560,6 @@ public class Software extends JFrame {
     }
 
     public void fullStop() {
-	textArea.append("Kein Kommunikation zu Roboter möglich\n");
+	textArea.append("Kein Kommunikation zu Roboter mÃ¶glich\n");
     }
 }
