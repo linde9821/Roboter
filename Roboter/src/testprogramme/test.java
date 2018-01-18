@@ -71,13 +71,14 @@
 
 package testprogramme;
 
+import roboter.RoboterException;
 import roboter.punkt;
 import roboter.robot;
 
 public class test {
     public static final String VERSION = "0.2.4 Java-Version";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws RoboterException {
 
 	if (args.length == 0) {
 	    System.out.println(
