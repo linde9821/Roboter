@@ -6,7 +6,6 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.SystemColor;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -27,6 +26,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
+
 import org.eclipse.wb.swing.FocusTraversalOnArray; //taborder
 
 //manual-imports
@@ -36,7 +36,6 @@ import input.EmptyInputException;//empty input exception
 import roboter.RoboterException;//robot exception
 import roboter.punkt;//point class
 import roboter.robot;
-import javax.swing.JTextPane;//robot class
 
 //class
 public class Software extends JFrame {
@@ -176,7 +175,7 @@ public class Software extends JFrame {
 	});
 	btnAusfuehren.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent e) {
-		
+
 		perform();
 	    }
 	});
@@ -503,7 +502,7 @@ public class Software extends JFrame {
 
 	    // checks if the point is verifiable (currently robot.ansteuerbarkeit is more a
 	    // placeholder than anything else: throws RoboterException if not verifiable
-	    if (!robot.ansteuerbarkeit(new punkt(0, 0, 0), p))
+	    if (!robot.ansteuerbarkeit(p))
 		throw new RoboterException("Der Punkt ist nicht ansteuerbar");
 
 	    if (statusausgabe)
@@ -698,7 +697,7 @@ public class Software extends JFrame {
 
 	    // checks if the point is verifiable (currently robot.ansteuerbarkeit is more a
 	    // placeholder than anything else: throws RoboterException if not verifiable
-	    if (!robot.ansteuerbarkeit(new punkt(0, 0, 0), p))
+	    if (!robot.ansteuerbarkeit(p))
 		throw new RoboterException("Der Punkt ist nicht ansteuerbar");
 
 	    if (statusausgabe)
@@ -716,7 +715,7 @@ public class Software extends JFrame {
 		Instant begin = Instant.now();
 		myRobot.moveto(p);
 		Duration dur = Duration.between(begin, Instant.now());
-		
+
 		textArea.append(myRobot.moveStr + "\n\n");
 		disconnect();
 		textArea.append("Bewegung beendet. Sie hat " + dur.toMillis() + " ms gedauert.\n");
@@ -862,28 +861,149 @@ public class Software extends JFrame {
     }
 
     private void set() {
-	byte id = Byte.parseByte(tfMID.getText());
-	short goal = Short.parseShort(tfWert.getText());
+	byte id;
+	short goal;
 
-	if (id >= 1 && id <= 4 && goal >= 10 && goal <= 900 ) {
-	    connect();
-	    myRobot.set(id, goal);
-	    disconnect();
+	if (rdbtnStatusausgaben.isSelected())
+	    textArea.append("Manuelles setzen wird gestartet\n\n");
 
+	try {
+	    // checks for empty Input
+	    if (tfMID.getText().equals("")) {
+		tfX.requestFocus();
+		throw new EmptyInputException("Keine Wert für die Motor ID");
+	    }
+
+	    if (tfWert.getText().equals("")) {
+		tfY.requestFocus();
+		throw new EmptyInputException("Keine Wert für den Wert");
+	    }
+
+	    // checks if autocorrection is enabeld
+	    if (rdbtnAutokorrektur.isSelected()) {
+		// sets up ControlInput
+		ControlInput.setCanBeNegative(false);
+		ControlInput.setCanBeAFloat(false);
+		ControlInput.setUseExceptions(false);
+
+		boolean usabel = true;
+
+		ControlInput ctrId = ControlInput.inspect(tfMID.getText());
+
+		if (!ctrId.isUsabel) {
+		    usabel = false;
+		    tfX.requestFocus();
+		    tfX.selectAll();
+		}
+
+		// if corret but corrected
+		if (ctrId.wasCorrected)
+		    tfZ.setText(ctrId.getSuggestedInput());
+
+		if (rdbtnStatusausgaben.isSelected()) {
+		    if (ctrId.wasCorrected) {
+			textArea.append("Motor ID wurde Korrigiert:\n");
+			textArea.append(ctrId.output() + "\n");
+		    }
+
+		    if (ctrId.isUsabel)
+			textArea.append("Motor ID ist nutzbar\n");
+		    else
+			textArea.append("Motor ID ist nicht nutzbar\n");
+		}
+
+		if (rdbtnFehlermeldungen.isSelected()) {
+		    if (!ctrId.isUsabel)
+			JOptionPane.showMessageDialog(null, "Motor ID ist nicht nutzbar");
+		}
+
+		ControlInput.setCanBeNegative(true);
+		ControlInput ctrVal = ControlInput.inspect(tfWert.getText());
+		usabel = true;
+
+		if (!ctrVal.isUsabel) {
+		    usabel = false;
+		    tfX.requestFocus();
+		    tfX.selectAll();
+		}
+
+		// if corret but corrected
+		if (ctrVal.wasCorrected)
+		    tfZ.setText(ctrVal.getSuggestedInput());
+
+		if (rdbtnStatusausgaben.isSelected()) {
+		    if (ctrVal.wasCorrected) {
+			textArea.append("Der Wert wurde Korrigiert:\n");
+			textArea.append(ctrVal.output() + "\n");
+		    }
+
+		    if (ctrVal.isUsabel)
+			textArea.append("Der Wert ist nutzbar\n");
+		    else
+			textArea.append("Der Wert ist nicht nutzbar\n");
+		}
+
+		if (rdbtnFehlermeldungen.isSelected()) {
+		    if (!ctrId.isUsabel)
+			JOptionPane.showMessageDialog(null, "Der Wert ist nicht nutzbar");
+		}
+
+		if (usabel) {
+		    id = Byte.parseByte(ctrId.getSuggestedInput());
+		    goal = Short.parseShort(ctrVal.getSuggestedInput());
+		} else // if not usabel: throws ControlInputException
+		    throw new ControlInputException("Keine Autokorrektur möglich");
+	    } else {
+		id = Byte.parseByte(tfMID.getText());
+		goal = Short.parseShort(tfWert.getText());
+	    }
+
+	    if (id >= 1 && id <= 4 && goal >= 10 && goal <= 900) {
+		connect();
+		myRobot.set(id, goal);
+		disconnect();
+
+		if (rdbtnStatusausgaben.isSelected())
+		    textArea.append(
+			    "Motor " + id + " erfolgreich auf " + goal + " (" + goal * 0.311 + "°) gesetzt\n\n");
+	    } else if (goal <= 10 || goal >= 900) {
+		if (rdbtnStatusausgaben.isSelected())
+		    textArea.append("Der Wert " + goal + " ist keine sichere Zielposition\n");
+
+		if (rdbtnFehlermeldungen.isSelected())
+		    JOptionPane.showMessageDialog(null, "Der Wert " + goal + " ist keine sichere Zielposition\n");
+	    } else {
+		if (rdbtnStatusausgaben.isSelected())
+		    textArea.append("Es existier kein Motor mit der ID: " + id + "\n");
+
+		if (rdbtnFehlermeldungen.isSelected())
+		    JOptionPane.showMessageDialog(null, "Es existier kein Motor mit der ID: " + id + "\n");
+	    }
+
+	} catch (EmptyInputException e) {
 	    if (rdbtnStatusausgaben.isSelected())
-		textArea.append("Motor " + id + " erfolgreich auf " + goal + " (" + goal * 0.311 + "°) gesetzt\n\n");
-	} else if (goal <= 10 || goal >= 900) {
-	    if (rdbtnStatusausgaben.isSelected())
-		textArea.append("Der Wert " + goal + " ist keine sichere Zielposition\n");
+		textArea.append("Es sind keine Werte eingegeben\n\n");
 
 	    if (rdbtnFehlermeldungen.isSelected())
-		JOptionPane.showMessageDialog(null, "Der Wert " + goal + " ist keine sichere Zielposition\n");
-	} else {
+		JOptionPane.showMessageDialog(null, "Es sind keine Werte eingegeben");
+
+	    e.printStackTrace();
+	} catch (ControlInputException e) {
 	    if (rdbtnStatusausgaben.isSelected())
-		textArea.append("Es existier kein Motor mit der ID: " + id + "\n");
+		textArea.append("Keine Autokorrektur möglich\n\n");
 
 	    if (rdbtnFehlermeldungen.isSelected())
-		JOptionPane.showMessageDialog(null, "Es existier kein Motor mit der ID: " + id + "\n");
+		JOptionPane.showMessageDialog(null, "Keine Autokorrektur möglich");
+
+	    e.printStackTrace();
+	} catch (Exception e) {
+	    if (rdbtnStatusausgaben.isSelected())
+		textArea.append("Unbekannter Fehler bei der Eingabe\n\n");
+
+	    if (rdbtnFehlermeldungen.isSelected())
+		JOptionPane.showMessageDialog(null, "Unbekannter Fehler bei der Eingabe");
+
+	    e.printStackTrace();
 	}
     }
 }

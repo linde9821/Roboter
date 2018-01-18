@@ -26,6 +26,8 @@ public class robot {
     private bauteil b2;
     private bauteil b3;
 
+    private double grad1, grad2, grad3;;
+
     private String setup_pos;
 
     private boolean changed;
@@ -141,6 +143,10 @@ public class robot {
 
 	b3.setVek(new vektor(new punkt(0, m2.getPos().getY(), B2_LENGTH),
 		new punkt(0, m2.getPos().getY(), B2_LENGTH + B3_LENGTH)));
+
+	grad1 = 30;
+	grad2 = 30;
+	grad3 = 30;
 
 	setSetup_pos("T-Pos");
 
@@ -423,29 +429,31 @@ public class robot {
     }
 
     public boolean moveto(punkt Zielpunkt) throws RoboterException {
-	if (ansteuerbarkeit(Zielpunkt) == false)
+	boolean ansteuerbar = calc(Zielpunkt);
+
+	if (ansteuerbar) {
+	    move(DXL_ID[0], grad1);
+	    move(DXL_ID[0], grad2);
+	    move(DXL_ID[0], grad3);
+	    move((byte) 4, grad1);
+	}
+
+	changed = true;
+
+	// Wenn beendet
+	return true;
+
+    }
+
+    public boolean calc(punkt Zielpunkt) {
+	if (!ansteuerbarkeit(Zielpunkt))
 	    return false;
 
 	double h = Math.sqrt(Zielpunkt.getX() * Zielpunkt.getX() + Zielpunkt.getY() * Zielpunkt.getY());
 	double a = B1_DIAMATER / 2;
 	double d = Math.sqrt((h - a) * (h - a) + (Zielpunkt.getZ() * Zielpunkt.getZ()));// Abstand Punkt P zu A
-	double grad1, grad2, grad3;
-
 	double b = B2_LENGTH;
 	double c = B3_LENGTH;
-
-	grad3 = Math.acos((((b * b) + (c * c) - (d * d)) / (2 * b * c)));// Untersuchen wie ArcCos funktioniert
-
-	/*
-	 * // Winkelberechnung der Motoren double a = B1_DIAMATER / 2; double b =
-	 * B2_LENGTH; double c = B3_LENGTH; double h = punkt.betrag(new punkt(0, 0, 0),
-	 * new punkt(Zielpunkt.getX(), Zielpunkt.getY(), 0)); double d =
-	 * Math.sqrt(Zielpunkt.getZ() * Zielpunkt.getZ() + (h - a) * (h - a));
-	 * 
-	 * 
-	 * short grad1, grad2, grad3;
-	 * 
-	 */
 
 	// Winkel Motor 1
 	double phi = Math.atan(Math.abs(Zielpunkt.getY() / Zielpunkt.getX()));
@@ -469,30 +477,26 @@ public class robot {
 	}
 
 	// Winkel Motor 2
-
 	double g1, g2;
 	g1 = Math.acos((B2_LENGTH * B2_LENGTH + d * d - B3_LENGTH * B3_LENGTH) / (2 * B2_LENGTH * B3_LENGTH));
-	g2 = Math.asin(Zielpunkt.getZ() / d);// BETRAG VON Z nehmen
+	g2 = Math.asin(Math.abs(Zielpunkt.getZ()) / d);
 
 	g1 = ((g1 * 180) / Math.PI);
 	g2 = ((g2 * 180) / Math.PI);
 
 	grad2 = (180 + g1 + g2);
-	/*
-	 * grad2 =(Math .cos(-((c * c - punkt.betrag(new punkt(a, 0, 0), new punkt(h,
-	 * Zielpunkt.getZ(), 0)) - b * b) / (2 * punkt.betrag(new punkt(a, 0, 0), new
-	 * punkt(h, Zielpunkt.getZ(), 0)) - b * b * b)))) + (Math.cos((h - a) / d)));
-	 * 
-	 * grad2 = (short) (grad2 * 180 / Math.PI);
-	 */
-	/*
-	 * Math.cos(-(((Math.sqrt(Zielpunkt.getX() * Zielpunkt.getX() + Zielpunkt.getY()
-	 * Zielpunkt.getY()) - a) Math.sqrt(Zielpunkt.getX() * Zielpunkt.getX() +
-	 * Zielpunkt.getY() * Zielpunkt.getY()) - a) - b * b - c * c) / (2 * b * c));
-	 */
 
+	// Winkel Motor 3
+	grad3 = Math.acos((((b * b) + (c * c) - (d * d)) / (2 * b * c)));
 	grad3 = (grad3 * 180 / Math.PI);
 
+	// Winkel in String speichern
+	DecimalFormat f = new DecimalFormat("0.00");
+	StringBuffer strbf = new StringBuffer("Winkelwerte:\n" + "M1: " + f.format(grad1) + "°\nM2: " + f.format(grad2)
+		+ "°\nM3: " + f.format(grad3) + "°");
+	moveStr = strbf.toString();
+
+	// Winkelausgabe
 	System.out.println("----------------\nCONSOLE-LOG\n----------------");
 	System.out.println("Winkelwerte:\n");
 	System.out.println("M1: " + grad1);
@@ -500,18 +504,12 @@ public class robot {
 	System.out.println("M3: " + grad3);
 	System.out.println("----------------\n");
 
-	DecimalFormat f = new DecimalFormat("0.00");
-
-	StringBuffer strbf = new StringBuffer("Winkelwerte:\n" + "M1: " + f.format(grad1) + "°\nM2: " + f.format(grad2)
-		+ "°\nM3: " + f.format(grad3) + "°");
-
-	moveStr = strbf.toString();
-
-	// Umrechne
+	// Umrechnen von Grad in Einheiten
 	grad1 = graToUni(grad1);
 	grad2 = graToUni(grad2);
 	grad3 = graToUni(grad3);
 
+	// Einheitsausgabe
 	System.out.println("----------------\nCONSOLE-LOG\n----------------");
 	System.out.println("Einheiten:\n");
 	System.out.println("M1: " + (short) grad1);
@@ -519,117 +517,54 @@ public class robot {
 	System.out.println("M3: " + (short) grad3);
 	System.out.println("----------------\n");
 
-	if (grad1 >= 10 || grad1 <= 900) {
-	    short dxl_present_position;
-
-	    // Testmotor
-	    do {
-		if ((dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION)) != 0) {
-		    System.out.println(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error));
-		    throw new RoboterException("Fehler beim ansteuern eines Motors");
-		}
-
-		dxl_present_position = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, (byte) 4,
-			ADDR_MX_PRESENT_POSITION);
-
-		System.out.println("[ID: " + (byte) 4 + "] GoalPos:" + (short) grad1 + " PresPos: "
-			+ dxl_present_position + " \n");
-
-		dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, (byte) 4, ADDR_MX_GOAL_POSITION, (short) grad1);
-
-	    } while (Math.abs(dxl_present_position - (short) grad1) >= ADDR_MX_PRESENT_POSITION);
-
-	    // Motor 1
-	    do {
-		if ((dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION)) != 0) {
-		    System.out.println(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error));
-		    throw new RoboterException("Fehler beim ansteuern eines Motors");
-		}
-
-		dxl_present_position = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[0],
-			ADDR_MX_PRESENT_POSITION);
-
-		System.out.println("[ID: " + DXL_ID[0] + "] GoalPos:" + (short) grad1 + " PresPos: "
-			+ dxl_present_position + " \n");
-
-		dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[0], ADDR_MX_GOAL_POSITION, (short) grad1);
-
-	    } while (Math.abs(dxl_present_position - (short) grad1) > ADDR_MX_PRESENT_POSITION);
-	    /*
-	     * 
-	     * //Motor 2 do { if ((dxl_error = dynamixel.getLastRxPacketError(port_num,
-	     * PROTOCOL_VERSION)) != 0) {
-	     * System.out.println(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error));
-	     * throw new RoboterException("Fehler beim ansteuern eines Motors"); }
-	     * 
-	     * dxl_present_position = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION,
-	     * DXL_ID[1], ADDR_MX_PRESENT_POSITION);
-	     * 
-	     * System.out.println("[ID: " + DXL_ID[1] + "] GoalPos:" + (short) grad1 +
-	     * " PresPos: " + dxl_present_position + " \n");
-	     * 
-	     * dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[1],
-	     * ADDR_MX_GOAL_POSITION, (short) grad2); } while (Math.abs(dxl_present_position
-	     * - (short) grad2) > ADDR_MX_PRESENT_POSITION);
-	     * 
-	     * //Motor 3 do { if ((dxl_error = dynamixel.getLastRxPacketError(port_num,
-	     * PROTOCOL_VERSION)) != 0) {
-	     * System.out.println(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error));
-	     * throw new RoboterException("Fehler beim ansteuern eines Motors"); }
-	     * 
-	     * dxl_present_position = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION,
-	     * DXL_ID[2], ADDR_MX_PRESENT_POSITION);
-	     * 
-	     * System.out.println("[ID: " + DXL_ID[2] + "] GoalPos:" + (short) grad1 +
-	     * " PresPos: " + dxl_present_position + " \n");
-	     * 
-	     * dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[2],
-	     * ADDR_MX_GOAL_POSITION, (short) grad3); } while (Math.abs(dxl_present_position
-	     * - (short) grad3) > ADDR_MX_PRESENT_POSITION);
-	     */
-	} else
-	    throw new RoboterException(
-		    "Einer oder mehrere der finalen Werte für die Motoren liegt außerhalb des sichern bereiches");
-
-	changed = true;
-
-	// Wenn beendet
 	return true;
     }
 
-    /*
-     * Operation ausführen //"Werkzeug" bool operation() {
-     * 
-     * }
-     */
+    public void move(byte id, double goal) throws RoboterException {
+	if (goal >= 10 || goal <= 900) {
+	    short dxl_present_position;
+
+	    do {
+		if ((dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION)) != 0) {
+		    System.out.println(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error));
+		    throw new RoboterException("Fehler beim ansteuern eines Motors");
+		}
+
+		dxl_present_position = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, id,
+			ADDR_MX_PRESENT_POSITION);
+
+		System.out.println(
+			"[ID: " + id + "] GoalPos:" + (short) goal + " PresPos: " + dxl_present_position + " \n");
+
+		dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, id, ADDR_MX_GOAL_POSITION, (short) goal);
+
+	    } while (Math.abs(dxl_present_position - (short) goal) >= ADDR_MX_PRESENT_POSITION);
+	} else
+	    throw new RoboterException("Nicht nutzbarer Wert für Motor " + id + " mit " + goal);
+    }
+
+    public static boolean ansteuerbarkeit(punkt Zielpunkt) {
+	double h = Math.sqrt(Zielpunkt.getX() * Zielpunkt.getX() + Zielpunkt.getY() * Zielpunkt.getY());
+	double a = B1_DIAMATER / 2;
+
+	if ((punkt.betrag(new punkt(0, 0, 0), Zielpunkt) > MAX_LENGTH)
+		|| (punkt.betrag(new punkt(0, 0, 0), Zielpunkt) < 90))
+	    return false;
+	else if (h > a) {
+	    return false;
+	} else if (Zielpunkt.getZ() >= -BODENEBENE)
+	    return false;
+
+	return true;
+    }
 
     public boolean zurücksetzten() {
-	/*
-	 * Alte Variante jedoch sollte diese auch noch getestet werden
-	 * m1.move(-m1.get_last_change()); m2.move(-m2.get_last_change());
-	 * m3.move(-m3.get_last_change());
-	 */
 
 	m1.move(0);
 	m2.move(0);
 	m3.move(0);
 
 	changed = false;
-
-	return true;
-    }
-
-    public boolean ansteuerbarkeit(punkt Zielpunkt) {
-	if ((punkt.betrag(new punkt(0, 0, 0), Zielpunkt) > MAX_LENGTH)
-		|| (punkt.betrag(new punkt(0, 0, 0), Zielpunkt) < 90))
-	    return false;
-
-	return true;
-    }
-
-    public static boolean ansteuerbarkeit(punkt Anfangspunkt, punkt Zielpunkt) {
-	if ((punkt.betrag(Anfangspunkt, Zielpunkt) > MAX_LENGTH) || (punkt.betrag(Anfangspunkt, Zielpunkt) < 90))
-	    return false;
 
 	return true;
     }
@@ -647,12 +582,12 @@ public class robot {
 	dynamixel.clearPort(port_num);
     }
 
-    private double graToUni(double gra) {
+    public static double graToUni(double gra) {
 	return gra / 0.29;
     }
 
-    private double uniToGra(double gra) {
-	return gra * 0.051;
+    public static double uniToGra(double gra) {
+	return gra * 0.29;
     }
 
     public void set(byte id, short goal) {
