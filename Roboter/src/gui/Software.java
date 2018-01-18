@@ -130,7 +130,7 @@ public class Software extends JFrame {
 	// scrollPane
 	scrollPane = new JScrollPane();
 	scrollPane.setAutoscrolls(true);
-	scrollPane.setBounds(332, 12, 342, 190);
+	scrollPane.setBounds(332, 12, 342, 279);
 	contentPane.add(scrollPane);
 
 	// textArea
@@ -180,7 +180,7 @@ public class Software extends JFrame {
 		perform();
 	    }
 	});
-	btnAusfuehren.setBounds(66, 145, 119, 23);
+	btnAusfuehren.setBounds(66, 146, 119, 23);
 	contentPane.add(btnAusfuehren);
 
 	// button Simulieren
@@ -199,7 +199,7 @@ public class Software extends JFrame {
 		simulate();
 	    }
 	});
-	btnSimulieren.setBounds(66, 111, 119, 23);
+	btnSimulieren.setBounds(66, 112, 119, 23);
 	contentPane.add(btnSimulieren);
 
 	// button Schließen
@@ -218,7 +218,7 @@ public class Software extends JFrame {
 		close();
 	    }
 	});
-	btnClose.setBounds(66, 179, 119, 23);
+	btnClose.setBounds(124, 268, 119, 23);
 	contentPane.add(btnClose);
 
 	// button Leeren
@@ -237,7 +237,7 @@ public class Software extends JFrame {
 		    emptyTextArea();
 	    }
 	});
-	btnLeeren.setBounds(203, 111, 119, 23);
+	btnLeeren.setBounds(203, 146, 119, 23);
 	contentPane.add(btnLeeren);
 
 	// radioButton Statusausgabe (dis-/enabels textArea)
@@ -313,27 +313,27 @@ public class Software extends JFrame {
 	});
 	btnVerbinden.setFont(new Font("Arial", Font.PLAIN, 12));
 	btnVerbinden.setBackground(SystemColor.controlShadow);
-	btnVerbinden.setBounds(203, 146, 119, 23);
+	btnVerbinden.setBounds(203, 112, 119, 23);
 	contentPane.add(btnVerbinden);
 
 	JLabel lblMotor = new JLabel("Motor: ");
-	lblMotor.setBounds(10, 226, 46, 14);
+	lblMotor.setBounds(10, 206, 46, 14);
 	contentPane.add(lblMotor);
 
 	tfMID = new JTextField();
 	tfMID.setFont(new Font("Arial", Font.PLAIN, 12));
 	tfMID.setColumns(10);
-	tfMID.setBounds(66, 223, 31, 20);
+	tfMID.setBounds(66, 202, 31, 20);
 	contentPane.add(tfMID);
 
 	JLabel lblWert = new JLabel("Wert:");
-	lblWert.setBounds(10, 256, 46, 14);
+	lblWert.setBounds(10, 237, 46, 14);
 	contentPane.add(lblWert);
 
 	tfWert = new JTextField();
 	tfWert.setFont(new Font("Arial", Font.PLAIN, 12));
 	tfWert.setColumns(10);
-	tfWert.setBounds(66, 254, 31, 20);
+	tfWert.setBounds(66, 233, 31, 20);
 	contentPane.add(tfWert);
 
 	JButton btnSetzen = new JButton("Setzen");
@@ -351,7 +351,7 @@ public class Software extends JFrame {
 	});
 	btnSetzen.setFont(new Font("Arial", Font.PLAIN, 12));
 	btnSetzen.setBackground(SystemColor.controlShadow);
-	btnSetzen.setBounds(118, 224, 129, 51);
+	btnSetzen.setBounds(124, 202, 119, 55);
 	contentPane.add(btnSetzen);
 
 	setTitle("Roboter Testprogramm " + version + " " + robot.version);// sets title
