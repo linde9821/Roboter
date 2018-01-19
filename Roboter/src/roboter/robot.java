@@ -2,6 +2,8 @@ package roboter;
 
 import java.text.DecimalFormat;
 
+import javax.swing.JOptionPane;
+
 import dynamixel.Dynamixel;
 
 public class robot {
@@ -34,7 +36,7 @@ public class robot {
 
     public static String moveStr;
 
-    // Dynamixel stuff
+    // Dynamixel 
     // Control table address
     short ADDR_MX_TORQUE_ENABLE = 24; // Control table address is different in Dynamixel model
     short ADDR_MX_GOAL_POSITION = 30;
@@ -43,26 +45,24 @@ public class robot {
     // Protocol version
     int PROTOCOL_VERSION = 1; // See which protocol version is used in the Dynamixel
 
-    // Default setting
+    // IDs for the Dynamixels 
     byte[] DXL_ID = new byte[] { 1, 2, 3 };
 
     int BAUDRATE = 1000000;
-    String DEVICENAME = "COM3"; // Check which port is being used on your controller
-    // ex) Windows: "COM1" Linux: "/dev/ttyUSB0" Mac: "/dev/tty.usbserial-*"
+    String DEVICENAME = "COM3"; // Check which port is being used on your controller Windows: "COM1-COM5" 
 
     byte TORQUE_ENABLE = 1; // Value for enabling the torque
     byte TORQUE_DISABLE = 0; // Value for disabling the torque
-    int DXL_MOVING_STATUS_THRESHOLD = 50; // Dynamixel moving status threshold currently to high
+    int DXL_MOVING_STATUS_THRESHOLD = 50; // Dynamixel moving status threshold 
 
     int COMM_SUCCESS = 0; // Communication Success result value
     int COMM_TX_FAIL = -1001; // Communication Tx Failed
 
-    // Dynamixel stuff
-    Dynamixel dynamixel;
-    int port_num;
+    Dynamixel dynamixel;//Dynamixel class
+    int port_num;//Port number (normaly 0)
     int dxl_comm_result;
     byte dxl_error;
-    short dxl_present_position;
+    short dxl_present_position;//Check if Really needed!
 
     // constructor
     public robot() throws RoboterException {
@@ -170,7 +170,7 @@ public class robot {
 	// Wenn beendet
 	return true;
     }
-    
+
     // simulates values for servors
     public static void sim(punkt Zielpunkt) {
 	if (!ansteuerbarkeit(Zielpunkt))
@@ -254,7 +254,6 @@ public class robot {
 	} while (Math.abs(dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, id, ADDR_MX_PRESENT_POSITION)
 		- goal) >= ADDR_MX_PRESENT_POSITION);
     }
-
 
     // must be tested and evaluated
     public boolean zurücksetzten() {
@@ -496,26 +495,30 @@ public class robot {
     // moves the motors to the calculated positions within the robot to point
     // procedure
     public void move(byte id, double goal) throws RoboterException {
-	if (goal >= 10 || goal <= 900) {
-	    short dxl_present_position;
+	int dialogButton = JOptionPane.YES_NO_OPTION;
+	int dialogResult = JOptionPane.showConfirmDialog(null,
+		"Soll Motor " + id + " wirklich auf " + (short) goal + " gesetzt werden?", "Warnung", dialogButton);
 
-	    do {
-		if ((dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION)) != 0) {
-		    System.out.println(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error));
-		    throw new RoboterException("Fehler beim ansteuern eines Motors");
-		}
+	if (dialogResult == JOptionPane.YES_OPTION) {
+	    if (goal >= 10 || goal <= 900) {
+		do {
+		    if ((dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION)) != 0) {
+			System.out.println(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error));
+			throw new RoboterException("Fehler beim ansteuern eines Motors");
+		    }
 
-		dxl_present_position = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, id,
-			ADDR_MX_PRESENT_POSITION);
+		    short dxl_present_position = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, id,
+			    ADDR_MX_PRESENT_POSITION);
 
-		System.out.println(
-			"[ID: " + id + "] GoalPos:" + (short) goal + " PresPos: " + dxl_present_position + " \n");
+		    System.out.println(
+			    "[ID: " + id + "] GoalPos:" + (short) goal + " PresPos: " + dxl_present_position + " \n");
 
-		dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, id, ADDR_MX_GOAL_POSITION, (short) goal);
+		    dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, id, ADDR_MX_GOAL_POSITION, (short) goal);
 
-	    } while (Math.abs(dxl_present_position - (short) goal) >= ADDR_MX_PRESENT_POSITION);
-	} else
-	    throw new RoboterException("Nicht nutzbarer Wert für Motor " + id + " mit " + goal);
+		} while (Math.abs(dxl_present_position - (short) goal) >= ADDR_MX_PRESENT_POSITION);
+	    } else
+		throw new RoboterException("Nicht nutzbarer Wert für Motor " + id + " mit " + goal);
+	}
     }
 
     // funktioniert nicht (liefert aktuell immer true)
