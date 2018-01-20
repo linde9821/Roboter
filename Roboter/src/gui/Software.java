@@ -96,6 +96,11 @@ public class Software extends JFrame {
 
 		scrollPane.setBounds(332, 12, getBounds().width - x, getBounds().height - y);
 	    }
+
+	    @Override
+	    public void componentShown(ComponentEvent arg0) {
+		startUpProcedure();
+	    }
 	});
 	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	setBounds(100, 100, 700, 341);
@@ -875,14 +880,14 @@ public class Software extends JFrame {
 		goal = Short.parseShort(tfWert.getText());
 	    }
 
-	    if (id >= 1 && id <= 4 && goal >= 10 && goal <= 900) {
+	    if (id >= 0 && id <= 3 && goal >= 0 && goal <= 1023) {
 		connect();
 		myRobot.set(id, goal);
 		disconnect();
 
 		if (rdbtnStatusausgaben.isSelected())
-		    textArea.append(
-			    "Motor " + id + " erfolgreich auf " + goal + " (" + goal * 0.311 + "°) gesetzt\n\n");
+		    textArea.append("Motor " + id + " erfolgreich auf " + goal + " (" + robot.graToUni(goal)
+			    + "°) gesetzt\n\n");
 	    } else if (goal <= 10 || goal >= 900) {
 		if (rdbtnStatusausgaben.isSelected())
 		    textArea.append("Der Wert " + goal + " ist keine sichere Zielposition\n");
@@ -920,7 +925,7 @@ public class Software extends JFrame {
 	}
     }
 
-    //trys to connect and disconnect 
+    // trys to connect and disconnect
     private void connectionTest() {
 	try {
 	    myRobot = new robot();
@@ -939,8 +944,8 @@ public class Software extends JFrame {
 		JOptionPane.showMessageDialog(null, "Es konnte keine verbindung zum Roboter hergestellt werden\n");
 	}
     }
-    
-    //connects with robot (disconnect() should be called after operation is done)
+
+    // connects with robot (disconnect() should be called after operation is done)
     private void connect() {
 	try {
 	    myRobot = new robot();
@@ -953,7 +958,7 @@ public class Software extends JFrame {
 	}
     }
 
-    //disconnects from the robot 
+    // disconnects from the robot
     private void disconnect() {
 	try {
 	    myRobot.disconnect();
@@ -966,13 +971,13 @@ public class Software extends JFrame {
 		JOptionPane.showMessageDialog(null, "Es konnte keine Verbindung zum Roboter hergestellt werden\n");
 	}
     }
-    
+
     // some information for the user
     private void ini() {
 	textArea.append("Initialisiere Programm\n");
 	textArea.append(version + "\n" + robot.version + "\n\n");
     }
-    
+
     // clears textArea
     private void emptyTextArea() {
 	textArea.setText("");
@@ -980,7 +985,7 @@ public class Software extends JFrame {
 	tfY.setText("");
 	tfZ.setText("");
     }
-    
+
     // radioButton Statusausgabe control
     private void rbS(int typ) {
 	if (typ == 0)
@@ -1009,6 +1014,27 @@ public class Software extends JFrame {
 	if (typ == 0)
 	    rdbtnAutokorrektur.setSelected(!rdbtnAutokorrektur.isSelected());
 	textArea.append("Autokorrektur auf " + rdbtnAutokorrektur.isSelected() + " gesetzt\n\n");
+    }
+
+    private void startUpProcedure() {
+	int dialogButton = JOptionPane.YES_NO_OPTION;
+
+	int dialogResult = JOptionPane.showConfirmDialog(null, "Sind die IDs richtig konfiguriert?", "Warnung",
+		dialogButton);
+
+	if (dialogResult == JOptionPane.NO_OPTION)
+	    close();
+
+	dialogResult = JOptionPane.showConfirmDialog(null, "Sind die Geschwindigkeiten richtig konfiguriert?",
+		"Warnung", dialogButton);
+
+	if (dialogResult == JOptionPane.NO_OPTION)
+	    close();
+
+	dialogResult = JOptionPane.showConfirmDialog(null, "Ist RoboPlus disconnected?", "Warnung", dialogButton);
+
+	if (dialogResult == JOptionPane.NO_OPTION)
+	    close();
     }
 
     // closes program
