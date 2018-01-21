@@ -7,7 +7,7 @@ import javax.swing.JOptionPane;
 import dynamixel.Dynamixel;
 
 public class robot {
-    public static final String version = "robot 1.3b";
+    public static final String version = "robot 1.4.2b";
     public static final double B1_DIAMATER = 52.5f * 2;// Durchmesser Bauteil 1
     public static final double B2_LENGTH = 222;// Länge Bauteil 2
     public static final double B3_LENGTH = 197;// Länge Bauteil 3
@@ -42,6 +42,10 @@ public class robot {
     short ADDR_MX_GOAL_POSITION = 30;
     short ADDR_MX_PRESENT_POSITION = 36;
 
+    short ADD_Present_Voltage = 42;
+    short ADD_Present_Temp = 43;
+    short ADD_Moving_Speed_Low = 32;
+
     // Protocol version
     int PROTOCOL_VERSION = 1; // See which protocol version is used in the Dynamixel
 
@@ -63,6 +67,22 @@ public class robot {
     int dxl_comm_result;
     byte dxl_error;
     short dxl_present_position;// Check if Really needed!
+
+    public short getSpeed(byte ID) {
+	return dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, ID, ADD_Moving_Speed_Low);
+    }
+
+    public void setSpeed(byte ID, short speed) {
+	dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, ID, ADD_Moving_Speed_Low, speed);
+    }
+
+    public short getVoltage(byte ID) {
+	return dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, ID, ADD_Present_Voltage);
+    }
+
+    public short getTemperature(byte ID) {
+	return dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, ID, ADD_Present_Temp);
+    }
 
     // constructor
     public robot() throws RoboterException {
@@ -162,9 +182,12 @@ public class robot {
 	    grad2 = graToUni(330) - grad2;
 	    grad3 -= graToUni(30);
 
-	    move(DXL_ID[0], grad1);
+	    move(DXL_ID[1], (short) 200);
+	    move(DXL_ID[2], (short) 13);
+
 	    move(DXL_ID[1], grad2);
 	    move(DXL_ID[2], grad3);
+	    move(DXL_ID[0], grad1);
 	    // move((byte) 4, grad1);
 
 	}
@@ -293,6 +316,10 @@ public class robot {
 	    dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, id, ADDR_MX_GOAL_POSITION, goal);
 	} while (Math.abs(dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, id, ADDR_MX_PRESENT_POSITION)
 		- goal) >= ADDR_MX_PRESENT_POSITION);
+    }
+
+    public short get(byte id) {
+	return dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, id, ADDR_MX_PRESENT_POSITION);
     }
 
     // must be tested and evaluated
@@ -536,13 +563,14 @@ public class robot {
     // procedure
     public void move(byte id, double goal) throws RoboterException {
 	int dialogButton = JOptionPane.YES_NO_OPTION;
-	int dialogResult = JOptionPane.showConfirmDialog(null,
-		"Soll Motor " + id + " wirklich auf " + (short) goal + " gesetzt werden?", "Warnung", dialogButton);
-
-	if (dialogResult == JOptionPane.YES_OPTION) {
+	// int dialogResult = JOptionPane.showConfirmDialog(null,"Soll Motor " + id + "
+	// wirklich auf " + (short) goal + " gesetzt werden?", "Warnung", dialogButton);
+	int dialogResult = JOptionPane.YES_NO_OPTION;
+	if (dialogResult == JOptionPane.YES_NO_OPTION
+		|| getTemperature(id) <= 60) {
 	    if (goal >= 0 || goal <= 1023) {
-		 short dxl_present_position = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, id,
-			    ADDR_MX_PRESENT_POSITION);
+		short dxl_present_position = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, id,
+			ADDR_MX_PRESENT_POSITION);
 		do {
 		    if ((dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION)) != 0) {
 			System.out.println(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error));
@@ -559,7 +587,7 @@ public class robot {
 
 		} while (Math.abs(dxl_present_position - (short) goal) >= ADDR_MX_PRESENT_POSITION);
 	    } else
-		throw new RoboterException("Nicht nutzbarer Wert für Motor " + id + " mit " + goal);
+		throw new RoboterException("Nicht nutzbarer Wert für Motor " + id + " mit " + goal + " oder zu hohe Temperatur mit " + getTemperature(id));
 	}
     }
 

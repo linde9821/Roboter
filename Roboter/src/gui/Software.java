@@ -12,12 +12,15 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.text.DecimalFormat;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -40,7 +43,7 @@ import roboter.robot;
 //class
 public class Software extends JFrame {
     private static final long serialVersionUID = 1L;
-    private String version = "programm 0.3b";// version
+    private String version = "programm 0.4b";// version
     private robot myRobot;// robot
 
     private JPanel contentPane;
@@ -103,7 +106,7 @@ public class Software extends JFrame {
 	    }
 	});
 	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	setBounds(100, 100, 700, 341);
+	setBounds(100, 100, 700, 400);
 	contentPane = new JPanel();
 	contentPane.setBackground(SystemColor.controlShadow);// frame background color
 	contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -128,14 +131,14 @@ public class Software extends JFrame {
 	lblz.setBounds(10, 77, 46, 14);
 	contentPane.add(lblz);
 
-	// Label für Motor-ID
+	// Label fÃ¼r Motor-ID
 	JLabel lblMotor = new JLabel("Motor: ");
-	lblMotor.setBounds(10, 206, 46, 14);
+	lblMotor.setBounds(10, 237, 46, 14);
 	contentPane.add(lblMotor);
 
-	// Label für Wert des manuell angesteuerten Motors
+	// Label fÃ¼r Wert des manuell angesteuerten Motors
 	JLabel lblWert = new JLabel("Wert:");
-	lblWert.setBounds(10, 237, 46, 14);
+	lblWert.setBounds(10, 273, 46, 14);
 	contentPane.add(lblWert);
 
 	// scrollPane
@@ -155,6 +158,7 @@ public class Software extends JFrame {
 
 	// textField x
 	tfX = new JTextField();
+	tfX.setText("170");
 	tfX.setFont(new Font("Arial", Font.PLAIN, 12));
 	tfX.setBounds(66, 12, 119, 20);
 	contentPane.add(tfX);
@@ -162,6 +166,7 @@ public class Software extends JFrame {
 
 	// textField y
 	tfY = new JTextField();
+	tfY.setText("0");
 	tfY.setFont(new Font("Arial", Font.PLAIN, 12));
 	tfY.setBounds(66, 43, 119, 20);
 	contentPane.add(tfY);
@@ -169,26 +174,27 @@ public class Software extends JFrame {
 
 	// textField z
 	tfZ = new JTextField();
+	tfZ.setText("40");
 	tfZ.setFont(new Font("Arial", Font.PLAIN, 12));
 	tfZ.setBounds(66, 74, 119, 20);
 	contentPane.add(tfZ);
 	tfZ.setColumns(10);
 
-	// Textfeld für Motor-ID
+	// Textfeld fÃ¼r Motor-ID
 	tfMID = new JTextField();
 	tfMID.setFont(new Font("Arial", Font.PLAIN, 12));
 	tfMID.setColumns(10);
-	tfMID.setBounds(66, 202, 31, 20);
+	tfMID.setBounds(66, 233, 31, 20);
 	contentPane.add(tfMID);
 
-	// Textfeld für Wert des Manuell angesteuerten Motors
+	// Textfeld fÃ¼r Wert des Manuell angesteuerten Motors
 	tfWert = new JTextField();
 	tfWert.setFont(new Font("Arial", Font.PLAIN, 12));
 	tfWert.setColumns(10);
-	tfWert.setBounds(66, 233, 31, 20);
+	tfWert.setBounds(66, 269, 31, 20);
 	contentPane.add(tfWert);
 
-	// button Ausführen
+	// button AusfÃ¼hren
 	btnAusfuehren = new JButton("Ausf\u00FChren");
 	btnAusfuehren.setBackground(SystemColor.controlShadow);
 	btnAusfuehren.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -228,7 +234,7 @@ public class Software extends JFrame {
 	btnSimulieren.setBounds(66, 112, 119, 23);
 	contentPane.add(btnSimulieren);
 
-	// button Schließen
+	// button SchlieÃŸen
 	btnClose = new JButton("Schlie\u00DFen");
 	btnClose.setBackground(SystemColor.controlShadow);
 	btnClose.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -245,7 +251,7 @@ public class Software extends JFrame {
 		    close();
 	    }
 	});
-	btnClose.setBounds(124, 268, 119, 23);
+	btnClose.setBounds(124, 315, 119, 23);
 	contentPane.add(btnClose);
 
 	// button Leeren
@@ -305,8 +311,28 @@ public class Software extends JFrame {
 	});
 	btnSetzen.setFont(new Font("Arial", Font.PLAIN, 12));
 	btnSetzen.setBackground(SystemColor.controlShadow);
-	btnSetzen.setBounds(124, 202, 119, 55);
+	btnSetzen.setBounds(124, 232, 119, 55);
 	contentPane.add(btnSetzen);
+
+	// button Ablauf
+	JButton btnAblauf = new JButton("Ablauf");
+	btnAblauf.addKeyListener(new KeyAdapter() {
+	    @Override
+	    public void keyPressed(KeyEvent e) {
+		if (e.getKeyCode() == KeyEvent.VK_ENTER)
+		    ablauf();
+	    }
+	});
+	btnAblauf.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		if (e.getModifiers() == ActionEvent.MOUSE_EVENT_MASK)
+		    ablauf();
+	    }
+	});
+	btnAblauf.setFont(new Font("Arial", Font.PLAIN, 12));
+	btnAblauf.setBackground(SystemColor.controlShadow);
+	btnAblauf.setBounds(66, 180, 119, 23);
+	contentPane.add(btnAblauf);
 
 	// radioButton Statusausgabe (dis-/enabels textArea)
 	rdbtnStatusausgaben = new JRadioButton("Statusausgaben");
@@ -392,7 +418,7 @@ public class Software extends JFrame {
 	    // checks for empty Input
 	    if (tfX.getText().equals("")) {
 		tfX.requestFocus();
-		throw new EmptyInputException("Keine Wert für die X-Koordinate");
+		throw new EmptyInputException("Keine Wert fÃ¼r die X-Koordinate");
 	    }
 
 	    if (tfY.getText().equals("")) {
@@ -402,7 +428,7 @@ public class Software extends JFrame {
 
 	    if (tfZ.getText().equals("")) {
 		tfZ.requestFocus();
-		throw new EmptyInputException("Keine Wert für die Z-Koordinate");
+		throw new EmptyInputException("Keine Wert fÃ¼r die Z-Koordinate");
 
 	    }
 
@@ -506,7 +532,7 @@ public class Software extends JFrame {
 		    y = Integer.parseInt(ctry.getSuggestedInput());
 		    z = Integer.parseInt(ctrz.getSuggestedInput());
 		} else // if not usabel: throws ControlInputException
-		    throw new ControlInputException("Keine Autokorrektur möglich");
+		    throw new ControlInputException("Keine Autokorrektur mÃ¶glich");
 	    } else {// reading the values without autocorrection
 		x = Integer.parseInt(tfX.getText());
 		y = Integer.parseInt(tfY.getText());
@@ -556,10 +582,10 @@ public class Software extends JFrame {
 		JOptionPane.showMessageDialog(null, e.getMessage());
 	} catch (NumberFormatException e) {
 	    if (rdbtnStatusausgaben.isSelected())
-		textArea.append("Bitte überprüfen Sie die Eingegeben Koordinatenwerte\n\n");
+		textArea.append("Bitte Ã¼berprÃ¼fen Sie die Eingegeben Koordinatenwerte\n\n");
 
 	    if (rdbtnFehlermeldungen.isSelected())
-		JOptionPane.showMessageDialog(null, "Bitte überprüfen Sie die Eingegeben Koordinatenwerte");
+		JOptionPane.showMessageDialog(null, "Bitte Ã¼berprÃ¼fen Sie die Eingegeben Koordinatenwerte");
 
 	} catch (Exception e) {
 	    if (rdbtnStatusausgaben.isSelected())
@@ -587,7 +613,7 @@ public class Software extends JFrame {
 	    // checks for empty Input
 	    if (tfX.getText().equals("")) {
 		tfX.requestFocus();
-		throw new EmptyInputException("Keine Wert für die X-Koordinate");
+		throw new EmptyInputException("Keine Wert fÃ¼r die X-Koordinate");
 	    }
 
 	    if (tfY.getText().equals("")) {
@@ -597,7 +623,7 @@ public class Software extends JFrame {
 
 	    if (tfZ.getText().equals("")) {
 		tfZ.requestFocus();
-		throw new EmptyInputException("Keine Wert für die Z-Koordinate");
+		throw new EmptyInputException("Keine Wert fÃ¼r die Z-Koordinate");
 	    }
 
 	    // checks if autocorrection is enabeld
@@ -701,7 +727,7 @@ public class Software extends JFrame {
 		    y = Integer.parseInt(ctry.getSuggestedInput());
 		    z = Integer.parseInt(ctrz.getSuggestedInput());
 		} else // if not usabel: throws ControlInputException
-		    throw new ControlInputException("Keine Autokorrektur möglich");
+		    throw new ControlInputException("Keine Autokorrektur mÃ¶glich");
 	    } else {// reading the values without autocorrection
 		x = Integer.parseInt(tfX.getText());
 		y = Integer.parseInt(tfY.getText());
@@ -720,7 +746,7 @@ public class Software extends JFrame {
 
 	    if (statusausgabe)
 		textArea.append(
-			"Bewegung beginnt. Das Programm nicht schließen und auf das beenden der Bewegung warten!\n\n");
+			"Bewegung beginnt. Das Programm nicht schlieÃŸen und auf das beenden der Bewegung warten!\n\n");
 
 	    tfX.requestFocus();
 	    tfX.selectAll();
@@ -765,10 +791,10 @@ public class Software extends JFrame {
 		JOptionPane.showMessageDialog(null, e.getMessage());
 	} catch (NumberFormatException e) {
 	    if (statusausgabe)
-		textArea.append("Bitte überprüfen Sie die Eingegeben Koordinatenwerte\n\n");
+		textArea.append("Bitte Ã¼berprÃ¼fen Sie die Eingegeben Koordinatenwerte\n\n");
 
 	    if (fehlermeldung)
-		JOptionPane.showMessageDialog(null, "Bitte überprüfen Sie die Eingegeben Koordinatenwerte");
+		JOptionPane.showMessageDialog(null, "Bitte Ã¼berprÃ¼fen Sie die Eingegeben Koordinatenwerte");
 
 	} catch (Exception e) {
 	    if (statusausgabe)
@@ -793,12 +819,12 @@ public class Software extends JFrame {
 	    // checks for empty Input
 	    if (tfMID.getText().equals("")) {
 		tfX.requestFocus();
-		throw new EmptyInputException("Keine Wert für die Motor ID");
+		throw new EmptyInputException("Keine Wert fÃ¼r die Motor ID");
 	    }
 
 	    if (tfWert.getText().equals("")) {
 		tfY.requestFocus();
-		throw new EmptyInputException("Keine Wert für den Wert");
+		throw new EmptyInputException("Keine Wert fÃ¼r den Wert");
 	    }
 
 	    // checks if autocorrection is enabeld
@@ -874,7 +900,7 @@ public class Software extends JFrame {
 		    id = Byte.parseByte(ctrId.getSuggestedInput());
 		    goal = Short.parseShort(ctrVal.getSuggestedInput());
 		} else // if not usabel: throws ControlInputException
-		    throw new ControlInputException("Keine Autokorrektur möglich");
+		    throw new ControlInputException("Keine Autokorrektur mÃ¶glich");
 	    } else {
 		id = Byte.parseByte(tfMID.getText());
 		goal = Short.parseShort(tfWert.getText());
@@ -887,7 +913,7 @@ public class Software extends JFrame {
 
 		if (rdbtnStatusausgaben.isSelected())
 		    textArea.append("Motor " + id + " erfolgreich auf " + goal + " (" + robot.graToUni(goal)
-			    + "°) gesetzt\n\n");
+			    + "Â°) gesetzt\n\n");
 	    } else if (goal <= 10 || goal >= 900) {
 		if (rdbtnStatusausgaben.isSelected())
 		    textArea.append("Der Wert " + goal + " ist keine sichere Zielposition\n");
@@ -910,12 +936,12 @@ public class Software extends JFrame {
 		JOptionPane.showMessageDialog(null, "Es sind keine Werte eingegeben");
 	} catch (ControlInputException e) {
 	    if (rdbtnStatusausgaben.isSelected())
-		textArea.append("Keine Autokorrektur möglich\n\n");
+		textArea.append("Keine Autokorrektur mÃ¶glich\n\n");
 
 	    if (rdbtnFehlermeldungen.isSelected())
-		JOptionPane.showMessageDialog(null, "Keine Autokorrektur möglich");
+		JOptionPane.showMessageDialog(null, "Keine Autokorrektur mÃ¶glich");
 	} catch (NullPointerException e) {
-	    // Nichts tuhen da dieser Fehler schon früher behandelt wird
+	    // Nichts tuhen da dieser Fehler schon frÃ¼her behandelt wird
 	} catch (Exception e) {
 	    if (rdbtnStatusausgaben.isSelected())
 		textArea.append("Unbekannter Fehler bei der Eingabe\n\n");
@@ -925,17 +951,90 @@ public class Software extends JFrame {
 	}
     }
 
+    private void ablauf() {
+	ArrayList<punkt> liste = new ArrayList<punkt>();
+
+	liste.add(new punkt(170, 0, 40));
+	liste.add(new punkt(200, 100, 50));
+	liste.add(new punkt(100, 200, -50));
+	liste.add(new punkt(-200, 100, 40));
+	liste.add(new punkt(-250, 50, 0));
+	liste.add(new punkt(170, 0, 40));
+
+	connect();
+
+	for (int i = 0; i < liste.size(); i++) {
+	    try {
+		myRobot.moveto(liste.get(i));
+
+		try {
+		    Thread.sleep(1000);
+		} catch (InterruptedException e) {
+		    // TODO Auto-generated catch block
+		    e.printStackTrace();
+		}
+	    } catch (RoboterException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	    }
+	}
+	disconnect();
+    }
+
     // trys to connect and disconnect
     private void connectionTest() {
 	try {
-	    myRobot = new robot();
-	    myRobot.disconnect();
+	    connect();
 
 	    if (rdbtnStatusausgaben.isSelected())
-		textArea.append("Es konnte eine verbindung zum Roboter hergestellt werden\n");
+		textArea.append("Es konnte eine Verbindung zum Roboter hergestellt werden\n");
 
-	    if (rdbtnFehlermeldungen.isSelected())
-		JOptionPane.showMessageDialog(null, "Es konnte eine verbindung zum Roboter hergestellt werden\n");
+	    for (int i = 0; i < 3; i++) {
+		textArea.append(
+			"Motor " + (byte) i + " hat eine Spannung von " + myRobot.getVoltage((byte) i) + "  mV\n");
+	    }
+	    textArea.append("Betriebsspannung:  9  ~ 12V (Empfohlen 11.1V)\n");
+
+	    for (int i = 0; i < 3; i++) {
+		textArea.append("Motor " + (byte) i + " hat eine Temperatur von " + myRobot.getTemperature((byte) i)
+			+ "  Â°C\n");
+	    }
+	    textArea.append("Betriebstemperatur: -5Â°C~ +70Â°C\n");
+
+	    boolean problem = false;
+	    for (int i = 0; i < 3; i++) {
+		textArea.append(
+			"Motor " + (byte) i + " hat eine Geschwindigkeit von " + myRobot.getSpeed((byte) i) + "\n");
+
+		if (myRobot.getSpeed((byte) i) == 0 || myRobot.getSpeed((byte) i) > 80)
+		    problem = true;
+
+	    }
+	    textArea.append("\n");
+
+	    if (problem == true) {
+		int dialogButton = JOptionPane.YES_NO_OPTION;
+
+		int dialogResult = JOptionPane.showConfirmDialog(null, "Es scheint ein Probelm bei den Geschwindigkeiten geben! Fixen?", "Warnung",
+			dialogButton);
+
+		if (dialogResult == JOptionPane.YES_NO_OPTION) {
+		    textArea.append("Problem behoben\n");
+		    myRobot.setSpeed((byte)0, (short) 80);
+		    myRobot.setSpeed((byte)1, (short) 40);
+		    myRobot.setSpeed((byte)2, (short) 40);
+		}
+		    
+	    }
+	    
+	    for (int i = 0; i < 3; i++) {
+		textArea.append("Motor " + (byte) i + " steht auf " + myRobot.get((byte) i) + " Einheiten ("
+			+ robot.uniToGra(myRobot.get((byte) i)) + "Â°)\n");
+	    }
+	    textArea.append("\n");
+
+	    disconnect();
+
 	} catch (Exception e) {
 	    if (rdbtnStatusausgaben.isSelected())
 		textArea.append("Es konnte keine verbindung zum Roboter hergestellt werden\n");
@@ -1035,6 +1134,12 @@ public class Software extends JFrame {
 
 	if (dialogResult == JOptionPane.NO_OPTION)
 	    close();
+
+	dialogResult = JOptionPane.showConfirmDialog(null, "Soll eine Testverbindung hergestellt werden?(Empfohlen)",
+		"Testverbindung", dialogButton);
+
+	if (dialogResult == JOptionPane.YES_OPTION)
+	    connectionTest();
     }
 
     // closes program
