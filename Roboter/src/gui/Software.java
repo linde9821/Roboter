@@ -18,6 +18,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -986,9 +987,6 @@ public class Software extends JFrame {
 	try {
 	    connect();
 
-	    if (rdbtnStatusausgaben.isSelected())
-		textArea.append("Es konnte eine Verbindung zum Roboter hergestellt werden\n");
-
 	    for (int i = 0; i < 3; i++) {
 		textArea.append(
 			"Motor " + (byte) i + " hat eine Spannung von " + myRobot.getVoltage((byte) i) + "  mV\n");
@@ -1015,18 +1013,18 @@ public class Software extends JFrame {
 	    if (problem == true) {
 		int dialogButton = JOptionPane.YES_NO_OPTION;
 
-		int dialogResult = JOptionPane.showConfirmDialog(null, "Es scheint ein Probelm bei den Geschwindigkeiten geben! Fixen?", "Warnung",
-			dialogButton);
+		int dialogResult = JOptionPane.showConfirmDialog(null,
+			"Es scheint ein Probelm bei den Geschwindigkeiten geben! Fixen?", "Warnung", dialogButton);
 
 		if (dialogResult == JOptionPane.YES_NO_OPTION) {
 		    textArea.append("Problem behoben\n");
-		    myRobot.setSpeed((byte)0, (short) 80);
-		    myRobot.setSpeed((byte)1, (short) 40);
-		    myRobot.setSpeed((byte)2, (short) 40);
+		    myRobot.setSpeed((byte) 0, (short) 80);
+		    myRobot.setSpeed((byte) 1, (short) 40);
+		    myRobot.setSpeed((byte) 2, (short) 40);
 		}
-		    
+
 	    }
-	    
+
 	    for (int i = 0; i < 3; i++) {
 		textArea.append("Motor " + (byte) i + " steht auf " + myRobot.get((byte) i) + " Einheiten ("
 			+ robot.uniToGra(myRobot.get((byte) i)) + "°)\n");
@@ -1035,10 +1033,10 @@ public class Software extends JFrame {
 
 	    disconnect();
 
-	} catch (Exception e) {
 	    if (rdbtnStatusausgaben.isSelected())
-		textArea.append("Es konnte keine verbindung zum Roboter hergestellt werden\n");
+		textArea.append("Es konnte eine Verbindung zum Roboter hergestellt werden\n");
 
+	} catch (Exception e) {
 	    if (rdbtnFehlermeldungen.isSelected())
 		JOptionPane.showMessageDialog(null, "Es konnte keine verbindung zum Roboter hergestellt werden\n");
 	}
