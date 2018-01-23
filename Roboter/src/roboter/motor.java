@@ -7,12 +7,14 @@ public class motor {
     private punkt pos;
     private double grad;
     private double max;
+    private double min;
 
     public motor() {
 	pos = new punkt();
 
 	grad = 0;
 	max = 0;
+	min = 0;
 
 	pos.setX(0);
 	pos.setY(0);
