@@ -76,7 +76,7 @@ import roboter.punkt;
 import roboter.robot;
 
 public class test {
-    public static final String VERSION = "0.2.4 Java-Version";
+    public static final String VERSION = "0.2.6 Java-Version";
 
     public static void main(String[] args) throws RoboterException {
 
@@ -98,7 +98,7 @@ public class test {
 	} else if (args[0].charAt(0) == '0') {
 	    System.out.println("Version: " + VERSION);
 
-	    robot myRobot = new robot();
+	    robot myRobot = new robot("COM3");
 	    myRobot.statusausgabe();
 
 	    myRobot.moveto(new punkt(100, 100, 10));
@@ -108,7 +108,7 @@ public class test {
 	} else {
 	    int x, y, z;
 
-	    robot myRobot = new robot();
+	    robot myRobot = new robot("COM3");
 
 	    myRobot.LOGO.ausgabe();
 

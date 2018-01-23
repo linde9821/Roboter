@@ -7,7 +7,7 @@ import javax.swing.JOptionPane;
 import dynamixel.Dynamixel;
 
 public class robot {
-    public static final String version = "robot 1.4.2b";
+    public static final String version = "robot 1.5b";
     public static final double B1_DIAMATER = 52.5f * 2;// Durchmesser Bauteil 1
     public static final double B2_LENGTH = 222;// Länge Bauteil 2
     public static final double B3_LENGTH = 197;// Länge Bauteil 3
@@ -85,8 +85,10 @@ public class robot {
     }
 
     // constructor
-    public robot() throws RoboterException {
+    public robot(String temp) throws RoboterException {
 	// Dynamixel stuff
+	DEVICENAME = temp;
+	
 
 	// Initialize Dynamixel class for java
 	dynamixel = new Dynamixel();
