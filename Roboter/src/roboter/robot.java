@@ -1,7 +1,6 @@
 package roboter;
 
 import java.text.DecimalFormat;
-
 import javax.swing.JOptionPane;
 
 import dynamixel.Dynamixel;
@@ -17,17 +16,21 @@ public class robot {
     public static final double MIN_LENGTH = Math.sqrt((B2_LENGTH * B2_LENGTH) + (B3_LENGTH * B3_LENGTH)
 	    - 2 * B2_LENGTH * B3_LENGTH * Math.cos((Math.PI / 180 * MIN_ANGEL_B2_B3)));// Minimale länge des Greifarms
 
+    //not really used 
     public logo LOGO;// Logo
 
+    //not really used
     private motor m1;// Motor 1
     private motor m2;// Motor 2
     private motor m3;// Motor 3
     private motor m4; // Werkzeug momentan nicht benutzt
 
+    //not really used 
     private bauteil b1;
     private bauteil b2;
     private bauteil b3;
 
+    //goal values for the angels 
     private double grad1, grad2, grad3;
 
     private String setup_pos;
@@ -564,7 +567,7 @@ public class robot {
     // moves the motors to the calculated positions within the robot to point
     // procedure
     public void move(byte id, double goal) throws RoboterException {
-	int dialogButton = JOptionPane.YES_NO_OPTION;
+	//int dialogButton = JOptionPane.YES_NO_OPTION;
 	// int dialogResult = JOptionPane.showConfirmDialog(null,"Soll Motor " + id + "
 	// wirklich auf " + (short) goal + " gesetzt werden?", "Warnung", dialogButton);
 	int dialogResult = JOptionPane.YES_NO_OPTION;

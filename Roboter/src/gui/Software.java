@@ -41,10 +41,10 @@ import roboter.robot;
 //class
 public class Software extends JFrame {
     private static final long serialVersionUID = 1L;
-    private String version = "programm 0.5.1b";// version
+    private String version = "programm 0.5.2b";// version
     private robot myRobot;// robot
-    private String device;
-    ArrayList<punkt> liste = new ArrayList<punkt>();
+    private String device;// devicename (essential for controlling the robot)
+    ArrayList<punkt> liste = new ArrayList<punkt>();// list of point for ablauf()
 
     private JPanel contentPane;
     private JScrollPane scrollPane;
@@ -76,10 +76,20 @@ public class Software extends JFrame {
 	    public void run() {
 		try {
 		    Software frame;
+
+		    // decides if the default devicename gets used or a spacific one
 		    if (args.length == 0)
 			frame = new Software("COM3");
-		    else
-			frame = new Software(args[0]);
+		    else {
+			if (args[0].contains("COM"))
+			    frame = new Software(args[0]);
+			else {
+			    frame = new Software("COM3");
+			    System.out.println("The programm was started with the argument \"" + args[0]
+				    + "\"\nIt seems like this is not correct. To make sure the frame gets "
+				    + "created and the robot is controlabel it was started with the default value auf \"COM3\"");
+			}
+		    }
 
 		    frame.setVisible(true);
 		} catch (Exception e) {
@@ -95,14 +105,6 @@ public class Software extends JFrame {
      */
     public Software(String str) {
 	device = str;// get device name
-
-	// sets up point for ablauf()
-	liste.add(new punkt(170, 0, 40));
-	liste.add(new punkt(200, 100, 50));
-	liste.add(new punkt(100, 200, -50));
-	liste.add(new punkt(-200, 100, 40));
-	liste.add(new punkt(-250, 50, 0));
-	liste.add(new punkt(170, 0, 40));
 
 	// font
 	setFont(new Font("Arial", Font.PLAIN, 12));
@@ -123,7 +125,7 @@ public class Software extends JFrame {
 	    }
 	});
 	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	setBounds(100, 100, 700, 400);
+	setBounds(100, 100, 900, 400);
 	contentPane = new JPanel();
 	contentPane.setBackground(SystemColor.controlShadow);// frame background color
 	contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -161,7 +163,7 @@ public class Software extends JFrame {
 	// scrollPane
 	scrollPane = new JScrollPane();
 	scrollPane.setAutoscrolls(true);
-	scrollPane.setBounds(332, 12, 342, 279);
+	scrollPane.setBounds(332, 12, 542, 338);
 	contentPane.add(scrollPane);
 
 	// textArea
@@ -260,16 +262,16 @@ public class Software extends JFrame {
 	});
 	btnSimulieren.setBounds(66, 112, 119, 23);
 	contentPane.add(btnSimulieren);
-	
+
 	// textField z
 	tfZ = new JTextField();
 	tfZ.addKeyListener(new KeyAdapter() {
-		@Override
-		public void keyPressed(KeyEvent e) {
-			if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-			    btnSimulieren.requestFocus();
-			}
+	    @Override
+	    public void keyPressed(KeyEvent e) {
+		if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+		    btnSimulieren.requestFocus();
 		}
+	    }
 	});
 	tfZ.setText("40");
 	tfZ.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -480,13 +482,23 @@ public class Software extends JFrame {
 
 	// Titel setzen
 	setTitle("Roboter Testprogramm " + version + " " + robot.version);
-	setFocusTraversalPolicy(new FocusTraversalOnArray(new Component[]{tfX, tfY, tfZ, btnSimulieren, btnAusfuehren, btnAblauf, btnVerbinden, btnLeeren, btnAdd, tfMID, tfWert, btnSetzen, btnClose, rdbtnStatusausgaben, rdbtnFehlermeldungen, rdbtnAutokorrektur, rdbtnStandardablauf}));
+	setFocusTraversalPolicy(new FocusTraversalOnArray(new Component[] { tfX, tfY, tfZ, btnSimulieren, btnAusfuehren,
+		btnAblauf, btnVerbinden, btnLeeren, btnAdd, tfMID, tfWert, btnSetzen, btnClose, rdbtnStatusausgaben,
+		rdbtnFehlermeldungen, rdbtnAutokorrektur, rdbtnStandardablauf }));
 	// taborder
 
 	tfX.requestFocus();
 	tfX.selectAll();
 
 	ini();// gives currently some output in the textArea
+
+	// sets up default point for ablauf()
+	liste.add(new punkt(170, 0, 40));
+	liste.add(new punkt(200, 100, 50));
+	liste.add(new punkt(100, 200, -50));
+	liste.add(new punkt(-200, 100, 40));
+	liste.add(new punkt(-250, 50, 0));
+	liste.add(new punkt(170, 0, 40));
     }
 
     // simulates movment
