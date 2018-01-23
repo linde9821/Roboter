@@ -121,7 +121,7 @@ public class test {
 	    System.out.println(
 		    "\nDer Ablauf wird Simuliert für eine Bewegung zum Punkt P(" + x + "|" + y + "|" + z + ")\n");
 
-	    myRobot.testausgabe();
+	    //myRobot.testausgabe();
 
 	    /*
 	     * myRobot.setup("POS-1");

@@ -41,7 +41,7 @@ import roboter.robot;
 //class
 public class Software extends JFrame {
     private static final long serialVersionUID = 1L;
-    private String version = "programm 0.5.2b";// version
+    private String version = "programm 0.6b";// version
     private robot myRobot;// robot
     private String device;// devicename (essential for controlling the robot)
     ArrayList<punkt> liste = new ArrayList<punkt>();// list of point for ablauf()
@@ -647,8 +647,8 @@ public class Software extends JFrame {
 		textArea.append("Bewegung zum Punkt P(" + x + "|" + y + "|" + z + ")\n\n");
 
 	    if (rdbtnStatusausgaben.isSelected()) {
-		robot.sim(p);
-		textArea.append(robot.moveStr + "\n");
+		robot simRobot = robot.sim(p);
+		textArea.append(simRobot.moveStr + "\n");
 		textArea.append("Simulation beendet\n\n");
 	    }
 
@@ -848,10 +848,13 @@ public class Software extends JFrame {
 	    try {
 		connect();
 		Instant begin = Instant.now();
+		
 		myRobot.moveto(p);
+		
 		Duration dur = Duration.between(begin, Instant.now());
 
-		textArea.append(robot.moveStr + "\n\n");
+		textArea.append(myRobot.moveStr + "\n\n");
+		
 		disconnect();
 		textArea.append("Bewegung beendet. Sie hat " + dur.toMillis() + " ms gedauert.\n");
 	    } catch (RoboterException e) {
@@ -862,6 +865,7 @@ public class Software extends JFrame {
 		    JOptionPane.showMessageDialog(null, e.getMessage());
 		e.printStackTrace();
 	    } catch (NullPointerException e) {
+		System.out.print("Nullpointer Exception");
 	    }
 	}
 	// error handling
@@ -1002,7 +1006,7 @@ public class Software extends JFrame {
 
 	    if (id >= 0 && id <= 3 && goal >= 0 && goal <= 1023) {
 		connect();
-		myRobot.set(id, goal);
+		myRobot.setPosition(id, goal);
 		disconnect();
 
 		if (rdbtnStatusausgaben.isSelected())
@@ -1298,27 +1302,32 @@ public class Software extends JFrame {
 		int dialogButton = JOptionPane.YES_NO_OPTION;
 
 		int dialogResult = JOptionPane.showConfirmDialog(null,
-			"Es scheint ein Probelm bei den Geschwindigkeiten geben! Fixen?", "Warnung", dialogButton);
+			"Es scheint ein Probelm bei den Geschwindigkeiten zu geben! Beheben?", "Warnung!",
+			dialogButton);
 
 		if (dialogResult == JOptionPane.YES_NO_OPTION) {
+		    final short movingSpeedM1 = 80;
+		    final short movingSpeedM2 = 40;
+		    final short movingSpeedM3 = movingSpeedM2;
+
 		    textArea.append("Problem behoben\n");
-		    myRobot.setSpeed((byte) 0, (short) 80);
-		    myRobot.setSpeed((byte) 1, (short) 40);
-		    myRobot.setSpeed((byte) 2, (short) 40);
+		    myRobot.setSpeed((byte) 0, movingSpeedM1);
+		    myRobot.setSpeed((byte) 1, movingSpeedM2);
+		    myRobot.setSpeed((byte) 2, movingSpeedM3);
 		}
 
 	    }
 
 	    for (int i = 0; i < 3; i++) {
-		textArea.append("Motor " + (byte) i + " steht auf " + myRobot.get((byte) i) + " Einheiten ("
-			+ robot.uniToGra(myRobot.get((byte) i)) + "°)\n");
+		textArea.append("Motor " + (byte) i + " steht auf " + myRobot.getPosition((byte) i) + " Einheiten ("
+			+ robot.uniToGra(myRobot.getPosition((byte) i)) + "°)\n");
 	    }
 	    textArea.append("\n");
 
 	    disconnect();
 
 	    if (rdbtnStatusausgaben.isSelected())
-		textArea.append("Es konnte eine Verbindung zum Roboter hergestellt werden\n");
+		textArea.append("Es konnte eine Verbindung zum Roboter hergestellt werden!\n\n");
 
 	} catch (Exception e) {
 	    if (rdbtnFehlermeldungen.isSelected())
@@ -1332,7 +1341,7 @@ public class Software extends JFrame {
 	    myRobot = new robot(device);
 	} catch (Exception e) {
 	    if (rdbtnStatusausgaben.isSelected())
-		textArea.append("Es konnte keine Verbindung zum Roboter hergestellt werden\n");
+		textArea.append("Es konnte keine Verbindung zum Roboter hergestellt werden!\\n\n");
 
 	    if (rdbtnFehlermeldungen.isSelected())
 		JOptionPane.showMessageDialog(null, "Es konnte keine Verbindung zum Roboter hergestellt werden\n");
@@ -1342,11 +1351,11 @@ public class Software extends JFrame {
     // disconnects from the robot
     private void disconnect() {
 	try {
-	    myRobot.disconnect();
+	    myRobot.manualDisconnect();
 	    myRobot = null;
 	} catch (Exception e) {
 	    if (rdbtnStatusausgaben.isSelected())
-		textArea.append("Es konnte keine Verbindung zum Roboter hergestellt werden\n");
+		textArea.append("Es konnte keine Verbindung zum Roboter hergestellt werden!\\n\n");
 
 	    if (rdbtnFehlermeldungen.isSelected())
 		JOptionPane.showMessageDialog(null, "Es konnte keine Verbindung zum Roboter hergestellt werden\n");
@@ -1431,7 +1440,7 @@ public class Software extends JFrame {
     private void startUpProcedure() {
 	int dialogButton = JOptionPane.YES_NO_OPTION;
 
-	int dialogResult = JOptionPane.showConfirmDialog(null, "Sind die IDs richtig konfiguriert?", "Warnung",
+	int dialogResult = JOptionPane.showConfirmDialog(null, "Sind die IDs richtig konfiguriert?", "Warnung!",
 		dialogButton);
 
 	if (dialogResult == JOptionPane.NO_OPTION)
@@ -1440,17 +1449,17 @@ public class Software extends JFrame {
 	dialogResult = JOptionPane.showConfirmDialog(null,
 		"Ist der Devicename " + this.device
 			+ " korrekt?Wenn nicht dann manuell über Geräte-Manager und Konsole starten.",
-		"Warnung", dialogButton);
+		"Warnung!", dialogButton);
 
 	if (dialogResult == JOptionPane.NO_OPTION)
 	    close();
 
-	dialogResult = JOptionPane.showConfirmDialog(null, "Ist RoboPlus disconnected?", "Warnung", dialogButton);
+	dialogResult = JOptionPane.showConfirmDialog(null, "Ist RoboPlus disconnected?", "Warnung!", dialogButton);
 
 	if (dialogResult == JOptionPane.NO_OPTION)
 	    close();
 
-	dialogResult = JOptionPane.showConfirmDialog(null, "Soll eine Testverbindung hergestellt werden?(Empfohlen)",
+	dialogResult = JOptionPane.showConfirmDialog(null, "Soll eine Testverbindung hergestellt werden? (Empfohlen)",
 		"Testverbindung", dialogButton);
 
 	if (dialogResult == JOptionPane.YES_OPTION)

@@ -9,7 +9,7 @@ public class test1 {
 	// TODO Auto-generated method stub
 	robot myRobot = new robot("COM3");
 	
-	myRobot.testausgabe();
+	//myRobot.testausgabe();
 
     }
 

@@ -1,12 +1,13 @@
 package roboter;
 
 import java.text.DecimalFormat;
+
 import javax.swing.JOptionPane;
 
 import dynamixel.Dynamixel;
 
 public class robot {
-    public static final String version = "robot 1.5b";
+    public static final String version = "robot 1.6b";
     public static final double B1_DIAMATER = 52.5f * 2;// Durchmesser Bauteil 1
     public static final double B2_LENGTH = 222;// Länge Bauteil 2
     public static final double B3_LENGTH = 197;// Länge Bauteil 3
@@ -16,28 +17,33 @@ public class robot {
     public static final double MIN_LENGTH = Math.sqrt((B2_LENGTH * B2_LENGTH) + (B3_LENGTH * B3_LENGTH)
 	    - 2 * B2_LENGTH * B3_LENGTH * Math.cos((Math.PI / 180 * MIN_ANGEL_B2_B3)));// Minimale länge des Greifarms
 
-    //not really used 
+    private final short speedM1 = 80;
+    private final short speedM2 = 40;
+    private final short speedM3 = 40;
+
+    // not really used
     public logo LOGO;// Logo
 
-    //not really used
+    // not really used
     private motor m1;// Motor 1
     private motor m2;// Motor 2
     private motor m3;// Motor 3
     private motor m4; // Werkzeug momentan nicht benutzt
 
-    //not really used 
+    // not really used
     private bauteil b1;
     private bauteil b2;
     private bauteil b3;
 
-    //goal values for the angels 
+    // goal values for the angels
     private double grad1, grad2, grad3;
 
-    private String setup_pos;
+    // the highest allowed temperature
+    private short tempratureMax = 60;// in °C
 
     private boolean changed;
 
-    public static String moveStr;
+    public String moveStr;
 
     // Dynamixel
     // Control table address
@@ -75,6 +81,26 @@ public class robot {
 	return dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, ID, ADD_Moving_Speed_Low);
     }
 
+    public short getPosition(byte ID) {
+	return dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, ID, ADDR_MX_PRESENT_POSITION);
+    }
+
+    // manual writing indivitual motors
+    public void setPosition(byte id, short goal) {
+	if (id == 0) {
+
+	} else if (id == 1) {
+
+	} else if (id == 2) {
+
+	}
+
+	do {
+	    dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, id, ADDR_MX_GOAL_POSITION, goal);
+	} while (Math.abs(dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, id, ADDR_MX_PRESENT_POSITION)
+		- goal) >= ADDR_MX_PRESENT_POSITION);
+    }
+
     public void setSpeed(byte ID, short speed) {
 	dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, ID, ADD_Moving_Speed_Low, speed);
     }
@@ -91,52 +117,63 @@ public class robot {
     public robot(String temp) throws RoboterException {
 	// Dynamixel stuff
 	DEVICENAME = temp;
-	
 
 	// Initialize Dynamixel class for java
 	dynamixel = new Dynamixel();
 
-	// Initialize PortHandler Structs
-	// Set the port path
-	// Get methods and members of PortHandlerLinux or PortHandlerWindows
-	port_num = dynamixel.portHandler(DEVICENAME);
+	if (DEVICENAME != "SIM") {
+	    // Initialize PortHandler Structs
+	    // Set the port path
+	    // Get methods and members of PortHandlerLinux or PortHandlerWindows
+	    port_num = dynamixel.portHandler(DEVICENAME);
 
-	// Initialize PacketHandler Structs
-	dynamixel.packetHandler();
+	    // Initialize PacketHandler Structs
+	    dynamixel.packetHandler();
 
-	dxl_comm_result = COMM_TX_FAIL; // Communication result
+	    dxl_comm_result = COMM_TX_FAIL; // Communication result
 
-	dxl_error = 0; // Dynamixel error
-	dxl_present_position = 0; // Present position
+	    dxl_error = 0; // Dynamixel error
+	    dxl_present_position = 0; // Present position
 
-	// Open port
-	if (dynamixel.openPort(port_num)) {
-	    System.out.println("Succeeded to open the port!");
-	} else {
-	    System.out.println("Failed to open the port!");
-	    throw new RoboterException("Failed to open the port!");
-	}
+	    // Open port
+	    if (dynamixel.openPort(port_num)) {
+		System.out.println("Succeeded to open the port!");
+	    } else {
+		System.out.println("Failed to open the port!");
+		throw new RoboterException("Failed to open the port!");
+	    }
 
-	// Set port baudrate
-	if (dynamixel.setBaudRate(port_num, BAUDRATE)) {
-	    System.out.println("Succeeded to change the baudrate!");
-	} else {
-	    System.out.println("Failed to change the baudrate!");
-	    throw new RoboterException("Failed to change the baudrate!");
-	}
+	    // Set port baudrate
+	    if (dynamixel.setBaudRate(port_num, BAUDRATE)) {
+		System.out.println("Succeeded to change the baudrate!");
+	    } else {
+		System.out.println("Failed to change the baudrate!");
+		throw new RoboterException("Failed to change the baudrate!");
+	    }
 
-	// Enable Dynamixel Torque
-	dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[0], ADDR_MX_TORQUE_ENABLE, TORQUE_ENABLE);
-	dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[1], ADDR_MX_TORQUE_ENABLE, TORQUE_ENABLE);
-	dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[2], ADDR_MX_TORQUE_ENABLE, TORQUE_ENABLE);
+	    // Enable Dynamixel Torque
+	    dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[0], ADDR_MX_TORQUE_ENABLE, TORQUE_ENABLE);
+	    dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[1], ADDR_MX_TORQUE_ENABLE, TORQUE_ENABLE);
+	    dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[2], ADDR_MX_TORQUE_ENABLE, TORQUE_ENABLE);
 
-	if ((dxl_comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION)) != COMM_SUCCESS) {
-	    System.out.println(dynamixel.getTxRxResult(PROTOCOL_VERSION, dxl_comm_result));
-	} else if ((dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION)) != 0) {
-	    System.out.println(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error));
-	    throw new RoboterException(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error));
-	} else {
-	    System.out.println("Dynamixel has been successfully connected");
+	    if ((dxl_comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION)) != COMM_SUCCESS) {
+		System.out.println(dynamixel.getTxRxResult(PROTOCOL_VERSION, dxl_comm_result));
+	    } else if ((dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION)) != 0) {
+		System.out.println(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error));
+		throw new RoboterException(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error));
+	    } else {
+		System.out.println("Dynamixel has been successfully connected");
+	    }
+
+	    // set default moving speed values
+	    dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[0], ADD_Moving_Speed_Low, speedM1);
+	    dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[1], ADD_Moving_Speed_Low, speedM2);
+	    dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[2], ADD_Moving_Speed_Low, speedM3);
+
+	    // initialise angel values with current servo positions
+	    grad1 = this.getPosition(DXL_ID[0]);
+	    grad2 = this.getPosition(DXL_ID[1]);
+	    grad3 = this.getPosition(DXL_ID[2]);
 	}
 
 	// diffrent stuff
@@ -170,13 +207,11 @@ public class robot {
 	b3.setVek(new vektor(new punkt(0, m2.getPos().getY(), B2_LENGTH),
 		new punkt(0, m2.getPos().getY(), B2_LENGTH + B3_LENGTH)));
 
-	grad1 = 30;
-	grad2 = 30;
-	grad3 = 30;
-
-	setSetup_pos("T-Pos");
-
 	changed = false;
+    }
+
+    public robot() throws RoboterException {
+	this("SIM");
     }
 
     // boarding point for robot to point procedure
@@ -203,195 +238,51 @@ public class robot {
 	return true;
     }
 
-    // simulates values for servors
-    public static void sim(punkt Zielpunkt) {
-	double t1, t2, t3;
-	if (!ansteuerbarkeit(Zielpunkt))
-	    return;
-
-	double h = Math.sqrt(Zielpunkt.getX() * Zielpunkt.getX() + Zielpunkt.getY() * Zielpunkt.getY());
-	double a = B1_DIAMATER / 2;
-	double d = Math.sqrt((h - a) * (h - a) + (Zielpunkt.getZ() * Zielpunkt.getZ()));// Abstand Punkt P zu A
-	double b = B2_LENGTH;
-	double c = B3_LENGTH;
-
-	// Winkel Motor 1
-	double phi = Math.atan(Math.abs(Zielpunkt.getY() / Zielpunkt.getX()));
-	t1 = 0;
-
-	phi = (double) (phi * 180 / Math.PI); // Umrechnen in GRAD
-
-	if (quadrant(Zielpunkt) == 1) {
-	    t1 = phi;
-	} else if (quadrant(Zielpunkt) == 2) {
-	    t1 = (180 - phi);
-	} else if (quadrant(Zielpunkt) == 3) {
-	    t1 = (180 + phi);
-	} else if (quadrant(Zielpunkt) == 4) {
-	    t1 = (360 - phi);
-	} else {
-	    if (Zielpunkt.getY() >= 0)
-		t1 = 90;
-	    else
-		t1 = 270;
+    // simulates values for servors and return an object with the calulated values
+    public static robot sim(punkt Zielpunkt) {
+	robot simRobot = null;
+	try {
+	    simRobot = new robot();
+	} catch (RoboterException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
 	}
 
-	// Winkel Motor 2
-	double g1, g2;
-	g1 = Math.acos((B2_LENGTH * B2_LENGTH + d * d - B3_LENGTH * B3_LENGTH) / (2 * B2_LENGTH * d));
-	g2 = Math.asin(Zielpunkt.getZ() / d);
+	boolean ansteuerbar = simRobot.calc(Zielpunkt);
 
-	g1 = ((g1 * 180) / Math.PI);
-	g2 = ((g2 * 180) / Math.PI);
+	if (ansteuerbar) {
+	    simRobot.grad2 = graToUni(330) - simRobot.grad2;
+	    simRobot.grad3 -= graToUni(30);
 
-	t2 = (180 + g1 + g2);
+	    StringBuffer strbf = new StringBuffer(simRobot.moveStr);
 
-	// Winkel Motor 3
-	t3 = Math.acos((((b * b) + (c * c) - (d * d)) / (2 * b * c)));
-	t3 = (t3 * 180 / Math.PI);
+	    // Winkelausgabe
+	    System.out.println("----------------\nCONSOLE-LOG sim()\n----------------");
+	    System.out.println("Winkelwerte (am Ende):\n");
+	    System.out.println("M1: " + simRobot.grad1);
+	    System.out.println("M2: " + simRobot.grad2);
+	    System.out.println("M3: " + simRobot.grad3);
+	    System.out.println("----------------\n");
 
-	// Winkel in String speichern
-	DecimalFormat f = new DecimalFormat("0.00");
-	StringBuffer strbf = new StringBuffer(
-		"Winkelwerte:\n" + "M1: " + f.format(t1) + "°\nM2: " + f.format(t2) + "°\nM3: " + f.format(t3) + "°");
-	moveStr = strbf.toString();
+	    // Einheitsausgabe
+	    System.out.println("----------------\nCONSOLE-LOG sim()\n----------------");
+	    System.out.println("Einheiten (am Ende):\n");
+	    System.out.println("M1: " + (short) simRobot.grad1);
+	    System.out.println("M2: " + (short) simRobot.grad2);
+	    System.out.println("M3: " + (short) simRobot.grad3);
+	    System.out.println("----------------\n");
 
-	// Winkelausgabe
-	System.out.println("----------------\nCONSOLE-LOG\n----------------");
-	System.out.println("Winkelwerte:\n");
-	System.out.println("M1: " + t1);
-	System.out.println("M2: " + t2);
-	System.out.println("M3: " + t3);
-	System.out.println("----------------\n");
+	    DecimalFormat f = new DecimalFormat("0.00");
+	    strbf = strbf.append("\nWinkelwerte(am Ende):\n" + "M1: " + f.format(simRobot.grad1) + "°\nM2: "
+		    + f.format(simRobot.grad2) + "°\nM3: " + f.format(simRobot.grad3) + "°");
 
-	// Umrechnen von Grad in Einheiten
-	t1 = graToUni(t1);
-	t2 = graToUni(t2);
-	t3 = graToUni(t3);
+	    strbf = strbf.append("\nEinheitswerte(am Ende):\n" + "M1: " + (short) simRobot.grad1 + "u\nM2: "
+		    + (short) simRobot.grad2 + "u\nM3: " + (short) simRobot.grad3 + "u");
 
-	// Einheitsausgabe
-	System.out.println("----------------\nCONSOLE-LOG\n----------------");
-	System.out.println("Einheiten:\n");
-	System.out.println("M1: " + (short) t1);
-	System.out.println("M2: " + (short) t2);
-	System.out.println("M3: " + (short) t3);
-	System.out.println("----------------\n");
-
-	// Umrechnen
-	t1 = uniToGra(t1);
-	t2 = uniToGra(t2);
-	t3 = uniToGra(t3);
-
-	t2 = 330 - t2;
-	t3 -= 30;
-
-	// Winkel in String speichern
-	f = new DecimalFormat("0.00");
-	strbf = new StringBuffer(
-		"Winkelwerte:\n" + "M1: " + f.format(t1) + "°\nM2: " + f.format(t2) + "°\nM3: " + f.format(t3) + "°");
-	moveStr = strbf.toString();
-
-	// Winkelausgabe
-	System.out.println("----------------\nCONSOLE-LOG\n----------------");
-	System.out.println("Winkelwerte (am Ende):\n");
-	System.out.println("M1: " + t1);
-	System.out.println("M2: " + t2);
-	System.out.println("M3: " + t3);
-	System.out.println("----------------\n");
-
-	// Umrechnen von Grad in Einheiten
-	t1 = graToUni(t1);
-	t2 = graToUni(t2);
-	t3 = graToUni(t3);
-
-	// Einheitsausgabe
-	System.out.println("----------------\nCONSOLE-LOG\n----------------");
-	System.out.println("Einheiten (am Ende):\n");
-	System.out.println("M1: " + (short) t1);
-	System.out.println("M2: " + (short) t2);
-	System.out.println("M3: " + (short) t3);
-	System.out.println("----------------\n");
-
-	return;
-    }
-
-    // manual writing indivitual motors
-    public void set(byte id, short goal) {
-	do {
-	    dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, id, ADDR_MX_GOAL_POSITION, goal);
-	} while (Math.abs(dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, id, ADDR_MX_PRESENT_POSITION)
-		- goal) >= ADDR_MX_PRESENT_POSITION);
-    }
-
-    public short get(byte id) {
-	return dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, id, ADDR_MX_PRESENT_POSITION);
-    }
-
-    // must be tested and evaluated
-    public boolean zurücksetzten() {
-	short saveGoalPosition = 30;
-	// old but could become handy in the future
-	// m1.move(0);
-	// m2.move(0);
-	// m3.move(0);
-
-	for (int i = 0; i < 3; i++) {
-	    try {
-		move(DXL_ID[(byte) i], saveGoalPosition);
-	    } catch (RoboterException e) {
-		e.printStackTrace();
-	    }
+	    simRobot.moveStr = strbf.toString();
 	}
 
-	changed = false;
-
-	return true;
-    }
-
-    // basic output (might be not usefull any longer)
-    public void testausgabe() {
-	System.out.print("Testausgabe:\n");
-
-	System.out.print("Roboter in veränderter Position: " + changed + "\n");
-
-	System.out.println("\nB1-Durchmesser: " + B1_DIAMATER);
-	System.out.println("\nB2-Länge: " + B2_LENGTH);
-	System.out.println("\nB3-Länge: " + B3_LENGTH);
-	System.out.println("\nMinimaler Winkel zwischen B2 und B3: " + MIN_ANGEL_B2_B3);
-	System.out.println("\nBodenebene: " + -BODENEBENE);
-	System.out.println("\nMaxmimale Spannweite: " + MAX_LENGTH);
-	System.out.println("\nMinimale Spannweite: " + MIN_LENGTH + "\n");
-
-	System.out.print("Bauteil 1: \n");
-	System.out.print("x1: " + b1.getVek().getBegin().getX() + " y1: " + b1.getVek().getBegin().getY() + " z1:"
-		+ b1.getVek().getBegin().getZ() + "\n");
-	System.out.print("x2: " + b1.getVek().getEnde().getX() + " y2: " + b1.getVek().getEnde().getY() + " z2:"
-		+ b1.getVek().getEnde().getZ() + "\n");
-
-	System.out.print("Bauteil 2: \n");
-	System.out.print("x1: " + b2.getVek().getBegin().getX() + " y1: " + b2.getVek().getBegin().getY() + " z1:"
-		+ b2.getVek().getBegin().getZ() + "\n");
-	System.out.print("x2: " + b2.getVek().getEnde().getX() + " y2: " + b2.getVek().getEnde().getY() + " z2:"
-		+ b2.getVek().getEnde().getZ() + "\n");
-	System.out.print("Betrag: " + b2.betrag() + "\n\n");
-
-	System.out.print("Bauteil 3: \n");
-	System.out.print("x1: " + b3.getVek().getBegin().getX() + " y1: " + b3.getVek().getBegin().getY() + " z1:"
-		+ b3.getVek().getBegin().getZ() + "\n");
-	System.out.print("x2: " + b3.getVek().getEnde().getX() + " y2: " + b3.getVek().getEnde().getY() + " z2:"
-		+ b3.getVek().getEnde().getZ() + "\n");
-	System.out.print("Betrag: " + b3.betrag() + "\n\n");
-
-	System.out.print("Motor 1: [" + m1.getID() + "] \n");
-	System.out.print("x: " + m1.getPos().getX() + "y: " + m1.getPos().getY() + "z: " + m1.getPos().getZ() + "\n\n");
-
-	System.out.print("Motor 2: [" + m2.getID() + "] \n");
-	System.out.print("x: " + m2.getPos().getX() + "y: " + m2.getPos().getY() + "z: " + m2.getPos().getZ() + "\n\n");
-
-	System.out.print("Motor 3: [" + m3.getID() + "] \n");
-	System.out.print("x: " + m3.getPos().getX() + "y: " + m3.getPos().getY() + "z: " + m3.getPos().getZ() + "\n\n");
-
-	System.out.print("Abstand Motor 1 zu Motor 3: " + motor.abstand(m1, m3) + "\n" + "\n\n");
+	return simRobot;
     }
 
     // gives status update in console (many parts of it dont work and are not
@@ -401,72 +292,50 @@ public class robot {
 
 	System.out.print("Roboter in veränderter Position: " + changed + "\n\n");
 
-	if (changed == true) {
-	    System.out.print("Bauteil 1: \n");
-	    System.out.print("Drehgrad: " + m1.getGrad() + "\n" + "\n");
-
-	    System.out.print("Bauteil 2: \n");
-	    System.out.print("Betrag: " + b2.betrag() + "\n");
-	    System.out.print("Winkel bezueglich B1: " + m2.getGrad() + "\n" + "\n");
-
-	    System.out.print("Bauteil 3: \n");
-	    System.out.print("Betrag: " + b3.betrag() + "\n");
-	    System.out.print("Winkel bezueglich B2: " + m3.getGrad() + "\n" + "\n");
-
-	    System.out.print("Motor 1: [" + m1.getID() + "] \n");
-	    System.out.print("Aktuelle Gradzahl: " + m1.getGrad() + "\n" + "\n");
-
-	    System.out.print("Motor 2: [" + m2.getID() + "] \n");
-	    System.out.print("Aktuelle Gradzahl: " + m2.getGrad() + "\n" + "\n");
-
-	    System.out.print("Motor 3: [" + m3.getID() + "] \n");
-	    System.out.print("Aktuelle Gradzahl: " + m3.getGrad() + "\n" + "\n");
-
-	    System.out.print("Ende der Statusausgabe\n\n");
-	} else {
-	    System.out.print("Bauteil 1: \n");
-	    System.out.print("Drehgrad: " + m1.getGrad() + "\n" + "\n");
-
-	    System.out.print("Bauteil 2: \n");
-	    System.out.print("x1: " + b2.getVek().getBegin().getX() + " y1: " + b2.getVek().getBegin().getY() + " z1:"
-		    + b2.getVek().getBegin().getZ() + "\n");
-	    System.out.print("x2: " + b2.getVek().getEnde().getX() + " y2: " + b2.getVek().getEnde().getY() + " z2:"
-		    + b2.getVek().getEnde().getZ() + "\n");
-	    System.out.print("Betrag: " + b2.betrag() + "\n");
-	    System.out.print("Winkel bezueglich B1: " + m2.getGrad() + "\n" + "\n");
-
-	    System.out.print("Bauteil 3: \n");
-	    System.out.print("x1: " + b3.getVek().getBegin().getX() + " y1: " + b3.getVek().getBegin().getY() + " z1:"
-		    + b3.getVek().getBegin().getZ() + "\n");
-	    System.out.print("x2: " + b3.getVek().getEnde().getX() + " y2: " + b3.getVek().getEnde().getY() + " z2:"
-		    + b3.getVek().getEnde().getZ() + "\n");
-	    System.out.print("Betrag: " + b3.betrag() + "\n");
-	    System.out.print("Winkel bezueglich B2: " + m3.getGrad() + "\n" + "\n");
-
-	    System.out.print("Motor 1: [" + m1.getID() + "] \n");
-	    System.out.print(
-		    "x: " + m1.getPos().getX() + " y: " + m1.getPos().getY() + " z: " + m1.getPos().getZ() + "\n");
-	    System.out.print("Aktuelle Gradzahl: " + m1.getGrad() + "\n" + "\n");
-
-	    System.out.print("Motor 2: [" + m2.getID() + "] \n");
-	    System.out.print(
-		    "x: " + m2.getPos().getX() + " y: " + m2.getPos().getY() + " z: " + m2.getPos().getZ() + "\n");
-	    System.out.print("Aktuelle Gradzahl: " + m2.getGrad() + "\n" + "\n");
-
-	    System.out.print("Motor 3: [" + m3.getID() + "] \n");
-	    System.out.print(
-		    "x: " + m3.getPos().getX() + " y: " + m3.getPos().getY() + " z: " + m3.getPos().getZ() + "\n");
-	    System.out.print("Aktuelle Gradzahl: " + m3.getGrad() + "\n" + "\n");
-
-	    System.out.print("Abstand Motor 1 zu Motor 2: " + motor.abstand(m1, m2) + "\n");
-	    System.out.print("Abstand Motor 1 zu Motor 3: " + motor.abstand(m1, m3) + "\n");
-	    System.out.print("Abstand Motor 2 zu Motor 3: " + motor.abstand(m2, m3) + "\n");
-
-	    System.out.println("Gesammtspannweite der beiden Bauelemente: "
-		    + vektor.betrag(b1.getVek().getBegin(), b3.getVek().getBegin()) + "\n");
-
-	    System.out.print("Ende der Statusausgabe\n\n");
+	for (int i = 0; i < 3; i++) {
+	    System.out.println("Motor " + (byte) i + " hat eine Spannung von " + getVoltage((byte) i) + "  mV\n");
 	}
+	System.out.println("Betriebsspannung:  9  ~ 12V (Empfohlen 11.1V)\n");
+
+	for (int i = 0; i < 3; i++) {
+	    System.out.println("Motor " + (byte) i + " hat eine Temperatur von " + getTemperature((byte) i) + "  °C\n");
+	}
+	System.out.println("Betriebstemperatur: -5°C~ +70°C\n");
+
+	boolean problem = false;
+	for (int i = 0; i < 3; i++) {
+	    System.out.println("Motor " + (byte) i + " hat eine Geschwindigkeit von " + getSpeed((byte) i) + "\n");
+
+	    if (getSpeed((byte) i) == 0 || getSpeed((byte) i) > 80)
+		problem = true;
+
+	}
+	System.out.println("\n");
+
+	if (problem == true) {
+	    int dialogButton = JOptionPane.YES_NO_OPTION;
+
+	    int dialogResult = JOptionPane.showConfirmDialog(null,
+		    "Es scheint ein Probelm bei den Geschwindigkeiten zu geben! Beheben?", "Warnung!", dialogButton);
+
+	    if (dialogResult == JOptionPane.YES_NO_OPTION) {
+		final short movingSpeedM1 = 80;
+		final short movingSpeedM2 = 40;
+		final short movingSpeedM3 = movingSpeedM2;
+
+		System.out.println("Problem behoben\n");
+		setSpeed((byte) 0, movingSpeedM1);
+		setSpeed((byte) 1, movingSpeedM2);
+		setSpeed((byte) 2, movingSpeedM3);
+	    }
+
+	}
+
+	for (int i = 0; i < 3; i++) {
+	    System.out.println("Motor " + (byte) i + " steht auf " + getPosition((byte) i) + " Einheiten ("
+		    + robot.uniToGra(getPosition((byte) i)) + "°)\n");
+	}
+	System.out.println("\n");
     }
 
     /*
@@ -474,7 +343,7 @@ public class robot {
      */
 
     // returns the quadrant of the goalpoint
-    public static int quadrant(punkt temp) {
+    private int quadrant(punkt temp) {
 	if (temp.getX() > 0 && temp.getY() >= 0) {
 	    return 1;
 	} else if (temp.getX() < 0 && temp.getY() >= 0) {
@@ -496,8 +365,6 @@ public class robot {
 	double h = Math.sqrt(Zielpunkt.getX() * Zielpunkt.getX() + Zielpunkt.getY() * Zielpunkt.getY());
 	double a = B1_DIAMATER / 2;
 	double d = Math.sqrt((h - a) * (h - a) + (Zielpunkt.getZ() * Zielpunkt.getZ()));// Abstand Punkt P zu A
-	double b = B2_LENGTH;
-	double c = B3_LENGTH;
 
 	// Winkel Motor 1
 	double phi = Math.atan(Math.abs(Zielpunkt.getY() / Zielpunkt.getX()));
@@ -531,17 +398,17 @@ public class robot {
 	grad2 = (180 + g1 + g2);
 
 	// Winkel Motor 3
-	grad3 = Math.acos((((b * b) + (c * c) - (d * d)) / (2 * b * c)));
+	grad3 = Math
+		.acos((((B2_LENGTH * B2_LENGTH) + (B3_LENGTH * B3_LENGTH) - (d * d)) / (2 * B2_LENGTH * B3_LENGTH)));
 	grad3 = (grad3 * 180 / Math.PI);
 
 	// Winkel in String speichern
 	DecimalFormat f = new DecimalFormat("0.00");
 	StringBuffer strbf = new StringBuffer("Winkelwerte:\n" + "M1: " + f.format(grad1) + "°\nM2: " + f.format(grad2)
 		+ "°\nM3: " + f.format(grad3) + "°");
-	moveStr = strbf.toString();
 
 	// Winkelausgabe
-	System.out.println("----------------\nCONSOLE-LOG\n----------------");
+	System.out.println("----------------\nCONSOLE-LOG calc()\n----------------");
 	System.out.println("Winkelwerte:\n");
 	System.out.println("M1: " + grad1);
 	System.out.println("M2: " + grad2);
@@ -554,12 +421,16 @@ public class robot {
 	grad3 = graToUni(grad3);
 
 	// Einheitsausgabe
-	System.out.println("----------------\nCONSOLE-LOG\n----------------");
+	System.out.println("----------------\nCONSOLE-LOG calc()\n----------------");
 	System.out.println("Einheiten:\n");
 	System.out.println("M1: " + (short) grad1);
 	System.out.println("M2: " + (short) grad2);
 	System.out.println("M3: " + (short) grad3);
 	System.out.println("----------------\n");
+
+	strbf = strbf.append("\nEinheitswerte:\n" + "M1: " + grad1 + "u\nM2: " + grad2 + "u\nM3: " + grad3 + "u");
+
+	moveStr = strbf.toString();
 
 	return true;
     }
@@ -567,46 +438,48 @@ public class robot {
     // moves the motors to the calculated positions within the robot to point
     // procedure
     public void move(byte id, double goal) throws RoboterException {
-	//int dialogButton = JOptionPane.YES_NO_OPTION;
-	// int dialogResult = JOptionPane.showConfirmDialog(null,"Soll Motor " + id + "
-	// wirklich auf " + (short) goal + " gesetzt werden?", "Warnung", dialogButton);
-	int dialogResult = JOptionPane.YES_NO_OPTION;
-	if (dialogResult == JOptionPane.YES_NO_OPTION
-		|| getTemperature(id) <= 60) {
-	    if (goal >= 0 || goal <= 1023) {
-		short dxl_present_position = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, id,
-			ADDR_MX_PRESENT_POSITION);
-		do {
-		    if ((dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION)) != 0) {
-			System.out.println(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error));
-			throw new RoboterException("Fehler beim ansteuern eines Motors");
-		    }
+	final double[] min = new double[] { 0, 0, 0 };
+	final double[] max = new double[] { 0, 0, 0 };
 
-		    dxl_present_position = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, id,
-			    ADDR_MX_PRESENT_POSITION);
-
-		    System.out.println(
-			    "[ID: " + id + "] GoalPos:" + (short) goal + " PresPos: " + dxl_present_position + " \n");
-
-		    dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, id, ADDR_MX_GOAL_POSITION, (short) goal);
-
-		} while (Math.abs(dxl_present_position - (short) goal) >= ADDR_MX_PRESENT_POSITION);
-	    } else
-		throw new RoboterException("Nicht nutzbarer Wert für Motor " + id + " mit " + goal + " oder zu hohe Temperatur mit " + getTemperature(id));
+	if (goal < min[id] || goal > max[id]) {
+	    throw new RoboterException("Nicht nutzbarer Wert für Motor " + id + " mit " + goal
+		    + " oder zu hohe Temperatur mit " + getTemperature(id));
 	}
+
+	if (getTemperature(id) <= tempratureMax) {
+
+	    short dxl_present_position = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, id,
+		    ADDR_MX_PRESENT_POSITION);
+	    do {
+		if ((dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION)) != 0) {
+		    System.out.println(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error));
+		    throw new RoboterException("Fehler beim ansteuern eines Motors");
+		}
+
+		dxl_present_position = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, id,
+			ADDR_MX_PRESENT_POSITION);
+
+		System.out.println(
+			"[ID: " + id + "] GoalPos:" + (short) goal + " PresPos: " + dxl_present_position + " \n");
+
+		dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, id, ADDR_MX_GOAL_POSITION, (short) goal);
+
+	    } while (Math.abs(dxl_present_position - (short) goal) >= ADDR_MX_PRESENT_POSITION);
+
+	} else
+	    throw new RoboterException("Zu hohe Temperatur bei Motor  " + id + " mit " + getTemperature(id));
+
     }
 
-    // funktioniert nicht (liefert aktuell immer true)
+    // checks if point is usabel
     public static boolean ansteuerbarkeit(punkt Zielpunkt) {
 	double h = Math.sqrt(Zielpunkt.getX() * Zielpunkt.getX() + Zielpunkt.getY() * Zielpunkt.getY());
 	double a = B1_DIAMATER / 2;
-	double b = B2_LENGTH;
-	double c = B3_LENGTH;
 
 	if (h <= a)
 	    return false;
-
-	else if (((h - a) * (h - a)) + Zielpunkt.getZ() * Zielpunkt.getZ() >= (b + c) * (b + c))
+	else if (((h - a) * (h - a)) + Zielpunkt.getZ() * Zielpunkt.getZ() >= (B2_LENGTH + B3_LENGTH)
+		* (B2_LENGTH + B3_LENGTH))
 	    return false;
 	else if (Zielpunkt.getZ() <= -BODENEBENE)
 	    return false;
@@ -614,10 +487,18 @@ public class robot {
 	return true;
     }
 
-    // directly controls the disconnect (lowest point! very important)
-    public void disconnect() {
-	dynamixel.closePort(port_num);
-	dynamixel.clearPort(port_num);
+    // directly controls the disconnection (lowest point! very important)
+    public boolean manualDisconnect() {
+	try {
+	    dynamixel.closePort(port_num);
+	    dynamixel.clearPort(port_num);
+
+	    return true;
+	} catch (Exception e) {
+	    e.printStackTrace();
+	    System.out.println("Fehler beim Disconnecten! Neustart empfohlen.");
+	    return false;
+	}
     }
 
     // from grad to units
@@ -628,73 +509,5 @@ public class robot {
     // from units to grad
     public static double uniToGra(double gra) {
 	return gra * 0.29;
-    }
-
-    // old might can be deleted
-    boolean setup(String temp) {
-	if (temp == "T-Pos") {
-	    m1.setPos(new punkt(0, 0, 0));
-	    m1.setGrad(0);
-
-	    m2.setPos(new punkt(0, B1_DIAMATER / 2, 0));
-	    m2.setGrad(0);
-
-	    m3.setPos(new punkt(0, B1_DIAMATER / 2, B2_LENGTH));
-	    m3.setGrad(0);
-
-	    m4.setPos(new punkt(0, B1_DIAMATER / 2, B2_LENGTH + B3_LENGTH));
-	    // m4.set_grad();
-
-	    b1.setVek(new vektor(new punkt(0, 0, 0), new punkt(0, 0, 0)));
-
-	    b2.setVek(new vektor(new punkt(0, m2.getPos().getY(), 0), new punkt(0, m2.getPos().getY(), B2_LENGTH)));
-
-	    b3.setVek(new vektor(new punkt(0, m2.getPos().getY(), B2_LENGTH),
-		    new punkt(0, m2.getPos().getY(), B2_LENGTH + B3_LENGTH)));
-
-	    setSetup_pos("T-Pos");
-
-	    changed = false;
-
-	    return true;
-	}
-
-	else if (temp == "POS-1") {
-	    m1.setPos(new punkt(0, 0, 0));
-	    m1.setGrad(0);
-
-	    m2.setPos(new punkt(0, B1_DIAMATER / 2, 0));
-	    m2.setGrad(0);
-
-	    m3.setPos(new punkt(0, B1_DIAMATER / 2, B2_LENGTH));
-	    m3.setGrad(0);
-
-	    m4.setPos(new punkt(0, B1_DIAMATER / 2, B2_LENGTH + B3_LENGTH));
-
-	    b1.setVek(new vektor(new punkt(0, 0, 0), new punkt(0, 0, 0)));
-
-	    b2.setVek(new vektor(new punkt(0, m2.getPos().getY(), 0), new punkt(0, m2.getPos().getY(), B2_LENGTH)));
-
-	    b3.setVek(new vektor(new punkt(0, m2.getPos().getY(), B2_LENGTH),
-		    new punkt(0, m2.getPos().getY(), B2_LENGTH + B3_LENGTH)));
-
-	    changed = false;
-
-	    setSetup_pos("POS-1");
-
-	    return true;
-	}
-
-	return false;
-    }
-
-    // old might can be deleted
-    public String getSetup_pos() {
-	return setup_pos;
-    }
-
-    // old might can be deleted
-    public void setSetup_pos(String setup_pos) {
-	this.setup_pos = setup_pos;
     }
 }
