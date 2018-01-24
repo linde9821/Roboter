@@ -647,9 +647,16 @@ public class Software extends JFrame {
 		textArea.append("Bewegung zum Punkt P(" + x + "|" + y + "|" + z + ")\n\n");
 
 	    if (rdbtnStatusausgaben.isSelected()) {
-		robot simRobot = robot.sim(p);
-		textArea.append(simRobot.moveStr + "\n");
-		textArea.append("Simulation beendet\n\n");
+		try {
+		    robot simRobot = robot.sim(p);
+		    textArea.append(simRobot.moveStr + "\n");
+		} catch (Exception e) {
+		    if (rdbtnStatusausgaben.isSelected())
+			textArea.append(e.getMessage() + "\n\n");
+
+		    if (rdbtnFehlermeldungen.isSelected())
+			JOptionPane.showMessageDialog(null, e.getMessage());
+		}
 	    }
 
 	    tfX.requestFocus();
@@ -689,6 +696,8 @@ public class Software extends JFrame {
 		JOptionPane.showMessageDialog(null, "Unbekannter Fehler aufgetreten");
 
 	    e.printStackTrace();
+	} finally {
+	    textArea.append("Simulation beendet\n\n");
 	}
     }
 
@@ -840,7 +849,7 @@ public class Software extends JFrame {
 
 	    if (statusausgabe)
 		textArea.append(
-			"Bewegung beginnt. Das Programm nicht schließen und auf das beenden der Bewegung warten!\n\n");
+			"Ausführen beginnt.\nDas Programm nicht schließen und auf das beenden der Bewegung warten!\n\n");
 
 	    tfX.requestFocus();
 	    tfX.selectAll();
@@ -848,13 +857,13 @@ public class Software extends JFrame {
 	    try {
 		connect();
 		Instant begin = Instant.now();
-		
+
 		myRobot.moveto(p);
-		
+
 		Duration dur = Duration.between(begin, Instant.now());
 
 		textArea.append(myRobot.moveStr + "\n\n");
-		
+
 		disconnect();
 		textArea.append("Bewegung beendet. Sie hat " + dur.toMillis() + " ms gedauert.\n");
 	    } catch (RoboterException e) {
@@ -866,6 +875,8 @@ public class Software extends JFrame {
 		e.printStackTrace();
 	    } catch (NullPointerException e) {
 		System.out.print("Nullpointer Exception");
+	    } finally {
+		textArea.append("Ausführen beendet\n\n");
 	    }
 	}
 	// error handling
@@ -1341,7 +1352,7 @@ public class Software extends JFrame {
 	    myRobot = new robot(device);
 	} catch (Exception e) {
 	    if (rdbtnStatusausgaben.isSelected())
-		textArea.append("Es konnte keine Verbindung zum Roboter hergestellt werden!\\n\n");
+		textArea.append("Es konnte keine Verbindung zum Roboter hergestellt werden!\n\n");
 
 	    if (rdbtnFehlermeldungen.isSelected())
 		JOptionPane.showMessageDialog(null, "Es konnte keine Verbindung zum Roboter hergestellt werden\n");
@@ -1355,7 +1366,7 @@ public class Software extends JFrame {
 	    myRobot = null;
 	} catch (Exception e) {
 	    if (rdbtnStatusausgaben.isSelected())
-		textArea.append("Es konnte keine Verbindung zum Roboter hergestellt werden!\\n\n");
+		textArea.append("Es konnte keine Verbindung zum Roboter hergestellt werden!\n\n");
 
 	    if (rdbtnFehlermeldungen.isSelected())
 		JOptionPane.showMessageDialog(null, "Es konnte keine Verbindung zum Roboter hergestellt werden\n");
@@ -1448,7 +1459,7 @@ public class Software extends JFrame {
 
 	dialogResult = JOptionPane.showConfirmDialog(null,
 		"Ist der Devicename " + this.device
-			+ " korrekt?Wenn nicht dann manuell über Geräte-Manager und Konsole starten.",
+			+ " korrekt? Wenn nicht dann manuell über Geräte-Manager und Konsole starten.",
 		"Warnung!", dialogButton);
 
 	if (dialogResult == JOptionPane.NO_OPTION)
@@ -1460,7 +1471,7 @@ public class Software extends JFrame {
 	    close();
 
 	dialogResult = JOptionPane.showConfirmDialog(null, "Soll eine Testverbindung hergestellt werden? (Empfohlen)",
-		"Testverbindung", dialogButton);
+		"Testverbindung?", dialogButton);
 
 	if (dialogResult == JOptionPane.YES_OPTION)
 	    connectionTest();

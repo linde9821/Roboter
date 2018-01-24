@@ -6,15 +6,11 @@ public class motor {
 
     private punkt pos;
     private double grad;
-    private double max;
-    private double min;
 
     public motor() {
 	pos = new punkt();
 
 	grad = 0;
-	max = 0;
-	min = 0;
 
 	pos.setX(0);
 	pos.setY(0);
@@ -42,23 +38,11 @@ public class motor {
 	}
 
 	else if (ID == 2) {
-	    if (grad > max) {
-		return false;
-	    }
 
-	    else if (grad == 0) {
-		return false;
-	    }
 	}
 
 	else if (ID == 3) {
-	    if (grad > max) {
-		return false;
-	    }
 
-	    else if (grad == 0) {
-		return false;
-	    }
 	}
 
 	// FUNKTION ZUM BEWEGEN
@@ -102,9 +86,6 @@ public class motor {
 	return grad;
     }
 
-    public double getMax() {
-	return max;
-    }
 
     public static void setAmount(int amount) {
 	motor.amount = amount;
@@ -122,7 +103,4 @@ public class motor {
 	this.grad = grad;
     }
 
-    public void setMax(double max) {
-	this.max = max;
-    }
 }
