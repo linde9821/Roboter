@@ -21,6 +21,10 @@ public class robot {
     private final short speedM2 = 40;
     private final short speedM3 = 40;
 
+    // need to be updated
+    final short[] min = new short[] { 0, 0, 0 };
+    final short[] max = new short[] { 1023, 1023, 1023 };
+
     // not really used
     public logo LOGO;// Logo
 
@@ -87,18 +91,12 @@ public class robot {
 
     // manual writing indivitual motors
     public void setPosition(byte id, short goal) {
-	if (id == 0) {
-
-	} else if (id == 1) {
-
-	} else if (id == 2) {
-
+	try {
+	    writeGoalPosition(id, goal);
+	} catch (RoboterException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
 	}
-
-	do {
-	    dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, id, ADDR_MX_GOAL_POSITION, goal);
-	} while (Math.abs(dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, id, ADDR_MX_PRESENT_POSITION)
-		- goal) >= ADDR_MX_PRESENT_POSITION);
     }
 
     public void setSpeed(byte ID, short speed) {
@@ -222,14 +220,12 @@ public class robot {
 	    grad2 = graToUni(330) - grad2;
 	    grad3 -= graToUni(30);
 
-	    move(DXL_ID[1], (short) 200);
-	    move(DXL_ID[2], (short) 13);
+	    writeGoalPosition(DXL_ID[1], (short) 200);
+	    writeGoalPosition(DXL_ID[2], (short) 13);
 
-	    move(DXL_ID[1], grad2);
-	    move(DXL_ID[2], grad3);
-	    move(DXL_ID[0], grad1);
-	    // move((byte) 4, grad1);
-
+	    writeGoalPosition(DXL_ID[1], grad2);
+	    writeGoalPosition(DXL_ID[2], grad3);
+	    writeGoalPosition(DXL_ID[0], grad1);
 	}
 
 	changed = true;
@@ -239,7 +235,7 @@ public class robot {
     }
 
     // simulates values for servors and return an object with the calulated values
-    public static robot sim(punkt Zielpunkt) {
+    public static robot sim(punkt Zielpunkt) throws RoboterException {
 	robot simRobot = null;
 	try {
 	    simRobot = new robot();
@@ -248,7 +244,9 @@ public class robot {
 	    e.printStackTrace();
 	}
 
-	boolean ansteuerbar = simRobot.calc(Zielpunkt);
+	boolean ansteuerbar;
+
+	ansteuerbar = simRobot.calc(Zielpunkt);
 
 	if (ansteuerbar) {
 	    simRobot.grad2 = graToUni(330) - simRobot.grad2;
@@ -358,7 +356,7 @@ public class robot {
     }
 
     // calculates values for servors
-    public boolean calc(punkt Zielpunkt) {
+    public boolean calc(punkt Zielpunkt) throws RoboterException {
 	if (!ansteuerbarkeit(Zielpunkt))
 	    return false;
 
@@ -394,6 +392,9 @@ public class robot {
 
 	g1 = ((g1 * 180) / Math.PI);
 	g2 = ((g2 * 180) / Math.PI);
+
+	if (Double.isNaN(g1) || Double.isNaN(g2))
+	    throw new RoboterException("Error while calulating g1 and g2");
 
 	grad2 = (180 + g1 + g2);
 
@@ -437,10 +438,7 @@ public class robot {
 
     // moves the motors to the calculated positions within the robot to point
     // procedure
-    public void move(byte id, double goal) throws RoboterException {
-	final double[] min = new double[] { 0, 0, 0 };
-	final double[] max = new double[] { 0, 0, 0 };
-
+    public void writeGoalPosition(byte id, double goal) throws RoboterException {
 	if (goal < min[id] || goal > max[id]) {
 	    throw new RoboterException("Nicht nutzbarer Wert für Motor " + id + " mit " + goal
 		    + " oder zu hohe Temperatur mit " + getTemperature(id));
@@ -492,7 +490,6 @@ public class robot {
 	try {
 	    dynamixel.closePort(port_num);
 	    dynamixel.clearPort(port_num);
-
 	    return true;
 	} catch (Exception e) {
 	    e.printStackTrace();
