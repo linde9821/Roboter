@@ -22,8 +22,8 @@ public class robot {
     private final short speedM3 = 40;
 
     // need to be updated
-    final short[] min = new short[] { 0, 0, 0 };
-    final short[] max = new short[] { 1023, 1023, 1023 };
+    final short[] min = new short[] { 0, 150, 10 };
+    final short[] max = new short[] { 1023, 517, 517 };
 
     // not really used
     public logo LOGO;// Logo
@@ -440,8 +440,7 @@ public class robot {
     // procedure
     public void writeGoalPosition(byte id, double goal) throws RoboterException {
 	if (goal < min[id] || goal > max[id]) {
-	    throw new RoboterException("Nicht nutzbarer Wert für Motor " + id + " mit " + goal
-		    + " oder zu hohe Temperatur mit " + getTemperature(id));
+	    throw new RoboterException("Nicht nutzbarer Wert für Motor " + id + " mit " + goal);
 	}
 
 	if (getTemperature(id) <= tempratureMax) {
