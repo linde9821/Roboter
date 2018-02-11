@@ -110,7 +110,6 @@ public class test {
 
 	    robot myRobot = new robot("COM3");
 
-	    myRobot.LOGO.ausgabe();
 
 	    System.out.println("Version: " + VERSION);
 
