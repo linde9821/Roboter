@@ -5,13 +5,14 @@ import java.time.Duration;
 import java.time.Instant;
 
 //testing needed 
-public class telemetrie {
+public class Telemetrie {
     static int amount = 0;
     int id;
     
     LocalTime timestamp;
     Duration dur;
 
+    boolean telemetrieerfassung;
     boolean error;
 
     short speedM1;
@@ -30,16 +31,18 @@ public class telemetrie {
     short voltageM2;
     short voltageM3;
 
-    telemetrie(robot crt) {
+    Telemetrie(Robot crt) {
 	id = amount;
 	amount++;
 	update(crt);
     }
 
-    private void update(robot crt) {
+    private void update(Robot crt) {
 	try {
 	    Instant temp = Instant.now();
-	    timestamp = LocalTime.now();   
+	    timestamp = LocalTime.now();  
+	    
+	    telemetrieerfassung=Robot.isTelemetrieerfassung();
 
 	    gradM1 = crt.getPosition((byte) 0);
 	    gradM2 = crt.getPosition((byte) 1);
@@ -70,7 +73,9 @@ public class telemetrie {
 
 	strbf.append(
 		"Telemetrie " + timestamp.getHour() + ":" + timestamp.getMinute() + ":" + timestamp.getSecond() + "\n");
-	strbf.append("ID: " + id);
+	strbf.append("Telemetrie-ID: " + id);
+	
+	strbf.append("Telemetrieerfassung: " + telemetrieerfassung);
 
 	strbf.append("Abfragedauer: " + dur.toMillis() + " ms");
 
@@ -89,11 +94,13 @@ public class telemetrie {
 	strbf.append("voltage M1: " + voltageM1 + " V\n");
 	strbf.append("voltage M2: " + voltageM2 + " V\n");
 	strbf.append("voltage M3: " + voltageM3 + " V\n");
+	
+	strbf.append("error: " + error);
 
 	return strbf.toString();
     }
 
-    public telemetrie getTelemetrie() {
+    public Telemetrie getTelemetrie() {
 	return this;
     }
 }

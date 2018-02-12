@@ -1,16 +1,16 @@
 package roboter;
 
-public class punkt {
+public class Punkt {
 
     private double x, y, z;
 
-    public punkt(double x, double y, double z) {
+    public Punkt(double x, double y, double z) {
 	this.x = x;
 	this.y = y;
 	this.z = z;
     }
 
-    public punkt() {
+    public Punkt() {
 	this(0.0, 0.0, 0.0);
     }
 
@@ -38,7 +38,7 @@ public class punkt {
 	this.z = z;
     }
 
-    public static double betrag(punkt P, punkt R) {
+    public static double betrag(Punkt P, Punkt R) {
 	double a = (P.x - R.x) * (P.x - R.x);
 	double b = (P.y - R.y) * (P.y - R.y);
 	double c = (P.z - R.z) * (P.z - R.z);

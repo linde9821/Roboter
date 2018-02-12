@@ -13,14 +13,14 @@ public class RoboterException extends Exception {
      */
     private static final long serialVersionUID = 1L;
 
-    private robot ExceptionRobot;
+    private Robot ExceptionRobot;
     private LocalDateTime time;
 
-    public RoboterException(robot current) {
+    public RoboterException(Robot current) {
 	this("", current);
     }
 
-    public RoboterException(String s, robot current) {
+    public RoboterException(String s, Robot current) {
 	super(s);
 	time = LocalDateTime.now();
 	ExceptionRobot = current.clone();
@@ -30,7 +30,7 @@ public class RoboterException extends Exception {
 
 	writeToProtocol("Aufgetreten am: " + time);
 
-	writeToProtocol("Beschreibung: " + this.getMessage());
+	writeToProtocol("Beschreibung: " + this.getMessage()); 
 
 	writeToProtocol(getTelemetrieInfos());
 
@@ -38,7 +38,7 @@ public class RoboterException extends Exception {
     }
 
     public String getTelemetrieInfos() {
-	final ArrayList<telemetrie> exceptionTelemetrie = ExceptionRobot.getTelemetrie();
+	final ArrayList<Telemetrie> exceptionTelemetrie = ExceptionRobot.getTelemetrie();
 
 	StringBuffer strbf = new StringBuffer();
 
@@ -47,11 +47,9 @@ public class RoboterException extends Exception {
 		throw new NullPointerException();
 
 	    for (int i = 0; i < exceptionTelemetrie.size(); i++) {
-		//muss noch ausgefüllt werden 
 		strbf.append("Zeitpunkt der Telemetriedaten: " + exceptionTelemetrie.get(i).timestamp.getHour() + ":"
 			+ exceptionTelemetrie.get(i).timestamp.getMinute() + ":"
 			+ exceptionTelemetrie.get(i).timestamp.getSecond() + "\n");
-		strbf.append("Telemetrie-ID: " + exceptionTelemetrie.get(i).id + "\n");
 
 		strbf.append(exceptionTelemetrie.get(i).getInfo());
 	    }

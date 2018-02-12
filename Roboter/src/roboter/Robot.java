@@ -11,7 +11,7 @@ import javax.swing.JOptionPane;
 
 import dynamixel.Dynamixel;
 
-public class robot implements Cloneable {
+public class Robot implements Cloneable {
     public static final String version = "robot 2.0b"; // current version
     public static final double B1_DIAMATER = 52.5f * 2;// Durchmesser Bauteil 1
     public static final double B2_LENGTH = 222;// Länge Bauteil 2
@@ -30,7 +30,8 @@ public class robot implements Cloneable {
     private static int amount = 0;
     int id;
 
-    private ArrayList<telemetrie> robotTelemetrie;
+    private static boolean telemetrieerfassung;
+    private ArrayList<Telemetrie> robotTelemetrie;
 
     final short[] min;
     final short[] max;
@@ -73,7 +74,7 @@ public class robot implements Cloneable {
     short dxl_present_position;// Check if Really needed!
 
     // constructor
-    public robot(String temp) throws RoboterException {
+    public Robot(String temp) throws RoboterException {
 	id = amount;
 	amount++;
 
@@ -92,7 +93,7 @@ public class robot implements Cloneable {
 	dynamixel = new Dynamixel();
 
 	if (DEVICENAME != "SIM") {
-	    robotTelemetrie = new ArrayList<telemetrie>();
+	    robotTelemetrie = new ArrayList<Telemetrie>();
 
 	    // Initialize PortHandler Structs
 	    // Set the port path
@@ -157,15 +158,15 @@ public class robot implements Cloneable {
 	writeToProtocol("Erfolgreich initialisiert");
     }
 
-    public robot() throws RoboterException {
+    public Robot() throws RoboterException {
 	this("SIM");
     }
 
     // clones current entity
     @Override
-    public robot clone() {
+    public Robot clone() {
 	try {
-	    return ((robot) super.clone());
+	    return ((Robot) super.clone());
 	} catch (CloneNotSupportedException e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
@@ -178,8 +179,16 @@ public class robot implements Cloneable {
 	return dynamixel;
     }
 
-    public ArrayList<telemetrie> getTelemetrie() {
+    public ArrayList<Telemetrie> getTelemetrie() {
 	return robotTelemetrie;
+    }
+
+    public static boolean isTelemetrieerfassung() {
+	return telemetrieerfassung;
+    }
+
+    public static void setTelemetrieerfassung(boolean tf) {
+	telemetrieerfassung = tf;
     }
 
     // read and write
@@ -230,7 +239,7 @@ public class robot implements Cloneable {
 	    do {
 		if ((dxl_error = dynamixel.getLastRxPacketError(port_num, PROTOCOL_VERSION)) != 0) {
 		    System.out.println(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error));
-		    throw new RoboterException("Fehler beim ansteuern von Motor" + id, this);
+		    throw new RoboterException("Fehler beim ansteuern von Motor " + id, this);
 		}
 
 		dxl_present_position = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, id,
@@ -253,7 +262,7 @@ public class robot implements Cloneable {
      * frontend methodes
      */
     // boarding point for robot to point procedure
-    public boolean moveto(punkt Zielpunkt) throws RoboterException {
+    public boolean moveto(Punkt Zielpunkt) throws RoboterException {
 	writeToProtocol("Bewegung zu P(" + Zielpunkt.getX() + "|" + Zielpunkt.getY() + "|" + Zielpunkt.getZ() + ")");
 
 	boolean ansteuerbar = calc(Zielpunkt);
@@ -277,10 +286,10 @@ public class robot implements Cloneable {
     }
 
     // simulates values for servors and return an object with the calulated values
-    public static robot sim(punkt Zielpunkt) throws RoboterException {
-	robot simRobot = null;
+    public static Robot sim(Punkt Zielpunkt) throws RoboterException {
+	Robot simRobot = null;
 	try {
-	    simRobot = new robot();
+	    simRobot = new Robot();
 	} catch (RoboterException e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
@@ -376,7 +385,7 @@ public class robot implements Cloneable {
 
 	for (int i = 0; i < 3; i++) {
 	    System.out.println("Motor " + (byte) i + " steht auf " + getPosition((byte) i) + " Einheiten ("
-		    + robot.uniToGra(getPosition((byte) i)) + "°)\n");
+		    + Robot.uniToGra(getPosition((byte) i)) + "°)\n");
 	}
 	System.out.println("\n");
     }
@@ -385,7 +394,7 @@ public class robot implements Cloneable {
      * Backend methodes
      */
     // returns the quadrant of the goalpoint
-    private int quadrant(punkt temp) {
+    private int quadrant(Punkt temp) {
 	if (temp.getX() > 0 && temp.getY() >= 0) {
 	    return 1;
 	} else if (temp.getX() < 0 && temp.getY() >= 0) {
@@ -400,7 +409,7 @@ public class robot implements Cloneable {
     }
 
     // calculates values for servors
-    public boolean calc(punkt Zielpunkt) throws RoboterException {
+    public boolean calc(Punkt Zielpunkt) throws RoboterException {
 	if (!ansteuerbarkeit(Zielpunkt))
 	    return false;
 
@@ -481,7 +490,7 @@ public class robot implements Cloneable {
     }
 
     // checks if point is usabel
-    public static boolean ansteuerbarkeit(punkt Zielpunkt) {
+    public static boolean ansteuerbarkeit(Punkt Zielpunkt) {
 	double h = Math.sqrt(Zielpunkt.getX() * Zielpunkt.getX() + Zielpunkt.getY() * Zielpunkt.getY());
 	double a = B1_DIAMATER / 2;
 
@@ -497,15 +506,15 @@ public class robot implements Cloneable {
     }
 
     // directly controls the disconnection (lowest point! very important)
-    public boolean manualDisconnect() {
+    public boolean manualDisconnect() throws RoboterException {
 	try {
 	    dynamixel.closePort(port_num);
 	    dynamixel.clearPort(port_num);
 	    return true;
 	} catch (Exception e) {
 	    e.printStackTrace();
-	    System.out.println("Fehler beim Disconnecten! Neustart empfohlen.");
-	    return false;
+	    throw new RoboterException("Fehler beim Disconnecten", this);
+	    //return false;
 	}
     }
 
@@ -519,24 +528,26 @@ public class robot implements Cloneable {
 	return gra * 0.29;
     }
 
-    //addes current telemetrie to telemetrie-list
+    // addes current telemetrie to telemetrie-list
     void addTele() {
-	if (robotTelemetrie.size() > 32) {
-	    robotTelemetrie.remove(0);
+	if (telemetrieerfassung) {
+	    if (robotTelemetrie.size() > 32) {
+		robotTelemetrie.remove(0);
+	    }
+
+	    robotTelemetrie.add(new Telemetrie(this));
+
+	    this.writeToProtocol(robotTelemetrie.get(robotTelemetrie.size() - 1).getInfo());
 	}
-
-	robotTelemetrie.add(new telemetrie(this));
-
-	this.writeToProtocol(robotTelemetrie.get(robotTelemetrie.size() - 1).getInfo());
     }
 
-    //decreased amount of entitys (a bit like a delete function)
+    // decreased amount of entitys (a bit like a delete function)
     private void decreaseAmount() {
 	amount--;
 	writeToProtocol("------------------------------------------------");
     }
 
-    //writes String into protocol 
+    // writes String into protocol
     public void writeToProtocol(String s) {
 	try {
 	    PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("Protokoll.txt", true)));
