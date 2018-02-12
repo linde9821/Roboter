@@ -72,8 +72,8 @@
 package testprogramme;
 
 import roboter.RoboterException;
-import roboter.punkt;
-import roboter.robot;
+import roboter.Punkt;
+import roboter.Robot;
 
 public class test {
     public static final String VERSION = "0.2.6 Java-Version";
@@ -98,17 +98,17 @@ public class test {
 	} else if (args[0].charAt(0) == '0') {
 	    System.out.println("Version: " + VERSION);
 
-	    robot myRobot = new robot("COM3");
+	    Robot myRobot = new Robot("COM3");
 	    myRobot.statusausgabe();
 
-	    myRobot.moveto(new punkt(100, 100, 10));
+	    myRobot.moveto(new Punkt(100, 100, 10));
 
 	    myRobot.statusausgabe();
 
 	} else {
 	    int x, y, z;
 
-	    robot myRobot = new robot("COM3");
+	    Robot myRobot = new Robot("COM3");
 
 
 	    System.out.println("Version: " + VERSION);
@@ -139,7 +139,7 @@ public class test {
 
 	    myRobot.statusausgabe();
 
-	    if (myRobot.moveto(new punkt(x, y, z)) == false)
+	    if (myRobot.moveto(new Punkt(x, y, z)) == false)
 		System.out.println("Der Punkt ist nicht ansteuerbar!\n");
 	    else
 		System.out.println("Der Punkt ist ansteuerbar!\n");

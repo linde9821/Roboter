@@ -42,15 +42,15 @@ import input.EmptyInputException;//empty input exception
 
 //robot imports 
 import roboter.RoboterException;//robot exception
-import roboter.punkt;//point class
-import roboter.robot;
+import roboter.Punkt;//point class
+import roboter.Robot;
 
 public class Software extends JFrame {
     private static final long serialVersionUID = 1L;
     private String version = "programm 1.0b";// version
-    private robot myRobot;// robot
+    private Robot myRobot;// robot
     private String device;// devicename (essential for controlling the robot)
-    ArrayList<punkt> liste = new ArrayList<punkt>();// list of point for ablauf()
+    ArrayList<Punkt> liste = new ArrayList<Punkt>();// list of point for ablauf()
 
     private JPanel contentPane;
     private JScrollPane scrollPane;
@@ -64,6 +64,7 @@ public class Software extends JFrame {
     private JRadioButton rdbtnFehlermeldungen;
     private JRadioButton rdbtnAutokorrektur;
     private JRadioButton rdbtnStandardablauf;
+    private JRadioButton rbTelemetrie;
     private JButton btnAusfuehren;
     private JButton btnLeeren;
     private JButton btnClose;
@@ -106,7 +107,7 @@ public class Software extends JFrame {
 	    }
 	});
     }
-   
+
     /**
      * Create the frame.
      */
@@ -159,12 +160,12 @@ public class Software extends JFrame {
 
 	// Label für Motor-ID
 	JLabel lblMotor = new JLabel("Motor: ");
-	lblMotor.setBounds(10, 256, 46, 14);
+	lblMotor.setBounds(10, 273, 46, 14);
 	contentPane.add(lblMotor);
 
 	// Label für Wert des manuell angesteuerten Motors
 	JLabel lblWert = new JLabel("Wert:");
-	lblWert.setBounds(10, 291, 46, 14);
+	lblWert.setBounds(10, 298, 46, 14);
 	contentPane.add(lblWert);
 
 	// scrollPane
@@ -220,14 +221,14 @@ public class Software extends JFrame {
 	tfMID = new JTextField();
 	tfMID.setFont(new Font("Arial", Font.PLAIN, 12));
 	tfMID.setColumns(10);
-	tfMID.setBounds(66, 252, 31, 20);
+	tfMID.setBounds(66, 269, 31, 20);
 	contentPane.add(tfMID);
 
 	// Textfeld für Wert des Manuell angesteuerten Motors
 	tfWert = new JTextField();
 	tfWert.setFont(new Font("Arial", Font.PLAIN, 12));
 	tfWert.setColumns(10);
-	tfWert.setBounds(66, 287, 31, 20);
+	tfWert.setBounds(66, 296, 31, 20);
 	contentPane.add(tfWert);
 
 	// button Ausführen
@@ -363,7 +364,7 @@ public class Software extends JFrame {
 	});
 	btnSetzen.setFont(new Font("Arial", Font.PLAIN, 12));
 	btnSetzen.setBackground(SystemColor.controlShadow);
-	btnSetzen.setBounds(124, 286, 119, 23);
+	btnSetzen.setBounds(124, 295, 119, 23);
 	contentPane.add(btnSetzen);
 
 	// button Ablauf
@@ -442,7 +443,7 @@ public class Software extends JFrame {
 		    auslesen();
 	    }
 	});
-	btnAulesen.setBounds(124, 252, 119, 23);
+	btnAulesen.setBounds(124, 268, 119, 23);
 	contentPane.add(btnAulesen);
 
 	// radioButton Statusausgabe (dis-/enabels textArea)
@@ -526,8 +527,28 @@ public class Software extends JFrame {
 	rdbtnStandardablauf.setBounds(198, 211, 124, 23);
 	contentPane.add(rdbtnStandardablauf);
 
+	rbTelemetrie = new JRadioButton("Telemetrie ");
+	rbTelemetrie.addKeyListener(new KeyAdapter() {
+	    @Override
+	    public void keyPressed(KeyEvent e) {
+		if (e.getKeyCode() == KeyEvent.VK_ENTER)
+		    rbT(0);
+	    }
+	});
+	rbTelemetrie.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		if (e.getModifiers() == ActionEvent.MOUSE_EVENT_MASK)
+		    rbT(1);
+	    }
+	});
+	rbTelemetrie.setSelected(true);
+	rbTelemetrie.setFont(new Font("Arial", Font.PLAIN, 12));
+	rbTelemetrie.setBackground(SystemColor.controlShadow);
+	rbTelemetrie.setBounds(198, 238, 124, 23);
+	contentPane.add(rbTelemetrie);
+
 	// Titel setzen
-	setTitle("Roboter Testprogramm " + version + " " + robot.version);
+	setTitle("Roboter Testprogramm " + version + " " + Robot.version);
 	setFocusTraversalPolicy(new FocusTraversalOnArray(new Component[] { tfX, tfY, tfZ, btnSimulieren, btnAusfuehren,
 		btnAblauf, btnVerbinden, btnLeeren, btnAdd, btnBefehl, tfMID, tfWert, btnAulesen, btnSetzen, btnClose,
 		rdbtnStatusausgaben, rdbtnFehlermeldungen, rdbtnAutokorrektur, rdbtnStandardablauf }));
@@ -537,15 +558,15 @@ public class Software extends JFrame {
 	tfX.selectAll();
 
 	textArea.append("Initialisiere Programm\n");
-	textArea.append(version + "\n" + robot.version + "\ndevicename: " + this.device + " \n\n");
+	textArea.append(version + "\n" + Robot.version + "\ndevicename: " + this.device + " \n\n");
 
 	// sets up default point for ablauf()
-	liste.add(new punkt(170, 0, 40));
-	liste.add(new punkt(200, 100, 50));
-	liste.add(new punkt(100, 200, -50));
-	liste.add(new punkt(-200, 100, 40));
-	liste.add(new punkt(-250, 50, 0));
-	liste.add(new punkt(170, 0, 40));
+	liste.add(new Punkt(170, 0, 40));
+	liste.add(new Punkt(200, 100, 50));
+	liste.add(new Punkt(100, 200, -50));
+	liste.add(new Punkt(-200, 100, 40));
+	liste.add(new Punkt(-250, 50, 0));
+	liste.add(new Punkt(170, 0, 40));
     }
 
     // simulates movment
@@ -680,12 +701,12 @@ public class Software extends JFrame {
 		z = Integer.parseInt(tfZ.getText());
 	    }
 
-	    punkt p = new punkt(x, y, z);// creat usabel point for the robot
+	    Punkt p = new Punkt(x, y, z);// creat usabel point for the robot
 
-	    robot simRobot = robot.sim(p);
+	    Robot simRobot = Robot.sim(p);
 
 	    // checks if the point is verifiable
-	    if (!robot.ansteuerbarkeit(p))
+	    if (!Robot.ansteuerbarkeit(p))
 		throw new RoboterException("Der Punkt ist nicht ansteuerbar", simRobot);
 	    else {
 		if (rdbtnStatusausgaben.isSelected())
@@ -760,7 +781,7 @@ public class Software extends JFrame {
 
     // methode which will calls the robot
     private void perform() {
-	punkt p = null;
+	Punkt p = null;
 	int x, y, z;// var. for coordinates
 	boolean statusausgabe = rdbtnStatusausgaben.isSelected();
 	boolean fehlermeldung = rdbtnFehlermeldungen.isSelected();
@@ -894,19 +915,18 @@ public class Software extends JFrame {
 		z = Integer.parseInt(tfZ.getText());
 	    }
 
-	    p = new punkt(x, y, z);// creat usabel point for the robot
+	    p = new Punkt(x, y, z);// creat usabel point for the robot
 
 	    // checks if the point is verifiable (currently robot.ansteuerbarkeit is more a
 	    // placeholder than anything else: throws RoboterException if not verifiable
-	    if (!robot.ansteuerbarkeit(p))
+	    if (!Robot.ansteuerbarkeit(p))
 		throw new RoboterException("Der Punkt ist nicht ansteuerbar", myRobot);
 
 	    if (statusausgabe)
 		textArea.append("Bewegung zum Punkt P(" + x + "|" + y + "|" + z + ")\n\n");
 
 	    if (statusausgabe)
-		textArea.append(
-			"Ausführen beginnt.\nDas Programm nicht schließen und auf das beenden der Bewegung warten!\n");
+		textArea.append("Ausführen beginnt\n");
 
 	    tfX.requestFocus();
 	    tfX.selectAll();
@@ -988,30 +1008,34 @@ public class Software extends JFrame {
     private void ablauf() {
 	final long delay = 1000; // delay between 2 operaton in ms
 
-	connect();
-	Instant begin = Instant.now();
+	if (connect()) {
+	    Instant begin = Instant.now();
 
-	for (int i = 0; i < liste.size(); i++) {
-	    try {
-		myRobot.moveto(liste.get(i));
-
-		textArea.append("Punkt " + (i + 1) + " von " + liste.size() + " angesteuert\n");
-
+	    for (int i = 0; i < liste.size(); i++) {
 		try {
-		    Thread.sleep(delay);
-		} catch (InterruptedException e) {
+		    myRobot.moveto(liste.get(i));
+
+		    textArea.append("Punkt " + (i + 1) + " von " + liste.size() + " angesteuert\n");
+
+		    try {
+			Thread.sleep(delay);
+		    } catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		    }
+		} catch (RoboterException e) {
 		    // TODO Auto-generated catch block
 		    e.printStackTrace();
 		}
-	    } catch (RoboterException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
 	    }
-	}
-	Duration dur = Duration.between(begin, Instant.now());
-	disconnect();
+	    
+	    Duration dur = Duration.between(begin, Instant.now());
+	    disconnect();
 
-	textArea.append("Ablauf beendet. Er hat " + dur.toMillis() + " ms gedauert.\n");
+	    textArea.append("Ablauf beendet. Er hat " + dur.toMillis() + " ms gedauert.\n");
+	} else {
+	    textArea.append("keine Verbindung herstellbar\n");
+	}
     }
 
     // methode for the order-tabel (not implimented)
@@ -1113,20 +1137,16 @@ public class Software extends JFrame {
 
 	    for (int i = 0; i < 3; i++) {
 		textArea.append("Motor " + (byte) i + " steht auf " + myRobot.getPosition((byte) i) + " Einheiten ("
-			+ robot.uniToGra(myRobot.getPosition((byte) i)) + "°)\n");
+			+ Robot.uniToGra(myRobot.getPosition((byte) i)) + "°)\n");
 	    }
 	    textArea.append("\n");
 
-	    // disconnect();
-
 	    if (rdbtnStatusausgaben.isSelected())
 		textArea.append("Es konnte eine Verbindung zum Roboter hergestellt werden!\n\n");
+	    
+	    disconnect();
 
-	} else {
-	    if (rdbtnFehlermeldungen.isSelected())
-		JOptionPane.showMessageDialog(null, "Es konnte keine verbindung zum Roboter hergestellt werden\n");
 	}
-	disconnect();
     }
 
     // clears textArea
@@ -1266,9 +1286,9 @@ public class Software extends JFrame {
 		z = Integer.parseInt(tfZ.getText());
 	    }
 
-	    punkt p = new punkt(x, y, z);// creat usabel point for the robot
+	    Punkt p = new Punkt(x, y, z);// creat usabel point for the robot
 
-	    if (!robot.ansteuerbarkeit(p))
+	    if (!Robot.ansteuerbarkeit(p))
 		throw new RoboterException("Der Punkt ist nicht ansteuerbar", myRobot);
 
 	    liste.add(p);
@@ -1442,7 +1462,7 @@ public class Software extends JFrame {
 		disconnect();
 
 		if (rdbtnStatusausgaben.isSelected())
-		    textArea.append("Motor " + id + " erfolgreich auf " + goal + " (" + robot.graToUni(goal)
+		    textArea.append("Motor " + id + " erfolgreich auf " + goal + " (" + Robot.graToUni(goal)
 			    + "°) gesetzt\n\n");
 	    } else if (goal <= 10 || goal >= 900) {
 		if (rdbtnStatusausgaben.isSelected())
@@ -1552,7 +1572,7 @@ public class Software extends JFrame {
 
 		if (rdbtnStatusausgaben.isSelected())
 		    textArea.append(
-			    "Motor " + id + " steht auf " + pos + " (" + robot.graToUni(pos) + "°) gesetzt\n\n");
+			    "Motor " + id + " steht auf " + pos + " (" + Robot.graToUni(pos) + "°) gesetzt\n\n");
 	    } else {
 		if (rdbtnStatusausgaben.isSelected())
 		    textArea.append("Es existier kein Motor mit der ID: " + id + "\n");
@@ -1629,17 +1649,24 @@ public class Software extends JFrame {
     // connects with robot (disconnect() should be called after operation is done)
     private boolean connect() {
 	try {
-	    myRobot = new robot(device);
+	    myRobot = new Robot(device);
 	    return true;
 	} catch (RoboterException e) {
 	    e.printStackTrace();
-	    return false;
-	} catch (Exception e) {
+	    
 	    if (rdbtnStatusausgaben.isSelected())
-		textArea.append("Es konnte keine Verbindung zum Roboter hergestellt werden!\n\n");
+		textArea.append("Es konnte keine Verbindung zum Roboter hergestellt werden\n");
 
 	    if (rdbtnFehlermeldungen.isSelected())
 		JOptionPane.showMessageDialog(null, "Es konnte keine Verbindung zum Roboter hergestellt werden\n");
+	    
+	    return false;
+	} catch (Exception e) {
+	    if (rdbtnStatusausgaben.isSelected())
+		textArea.append("Unbekannter fehler beim connecten aufgetreten\n");
+
+	    if (rdbtnFehlermeldungen.isSelected())
+		JOptionPane.showMessageDialog(null, "Unbekannter fehler beim connecten aufgetreten\\n");
 
 	    return false;
 	}
@@ -1650,12 +1677,22 @@ public class Software extends JFrame {
 	try {
 	    myRobot.manualDisconnect();
 	    myRobot = null;
-	} catch (Exception e) {
+	} catch (RoboterException e) {
+	    e.printStackTrace();
+	    
 	    if (rdbtnStatusausgaben.isSelected())
 		textArea.append("Es konnte keine Verbindung zum Roboter hergestellt werden!\n\n");
 
 	    if (rdbtnFehlermeldungen.isSelected())
 		JOptionPane.showMessageDialog(null, "Es konnte keine Verbindung zum Roboter hergestellt werden\n");
+	} catch (Exception e) {
+	    e.printStackTrace();
+	    
+	    if (rdbtnStatusausgaben.isSelected())
+		textArea.append("Unbekannter Fehler beim Disconnecten aufgetreten!\n");
+
+	    if (rdbtnFehlermeldungen.isSelected())
+		JOptionPane.showMessageDialog(null, "Unbekannter Fehler beim Disconnecten aufgetreten!\n");
 	}
     }
 
@@ -1699,12 +1736,12 @@ public class Software extends JFrame {
 	if (rdbtnStandardablauf.isSelected()) {
 	    liste.clear();
 	    // sets up point for ablauf()
-	    liste.add(new punkt(170, 0, 40));
-	    liste.add(new punkt(200, 100, 50));
-	    liste.add(new punkt(100, 200, -50));
-	    liste.add(new punkt(-200, 100, 40));
-	    liste.add(new punkt(-250, 50, 0));
-	    liste.add(new punkt(170, 0, 40));
+	    liste.add(new Punkt(170, 0, 40));
+	    liste.add(new Punkt(200, 100, 50));
+	    liste.add(new Punkt(100, 200, -50));
+	    liste.add(new Punkt(-200, 100, 40));
+	    liste.add(new Punkt(-250, 50, 0));
+	    liste.add(new Punkt(170, 0, 40));
 	} else {
 	    liste.clear();
 	}
@@ -1718,5 +1755,14 @@ public class Software extends JFrame {
 
 	    textArea.append("Punkte " + (i + 1) + ": " + "P(" + a + "|" + b + "|" + c + ")" + "\n");
 	}
+    }
+
+    // radioButton Telemetrie
+    private void rbT(int typ) {
+	if (typ == 0)
+	    rbTelemetrie.setSelected(!rbTelemetrie.isSelected());
+	textArea.append("Telemetrie Erfassung auf " + rbTelemetrie.isSelected() + " gesetzt\n\n");
+
+	Robot.setTelemetrieerfassung(rbTelemetrie.isSelected());
     }
 }

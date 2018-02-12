@@ -1,20 +1,22 @@
 package roboter;
 
-public class vektor {
-    private punkt begin;
-    private punkt ende;
+//currently not used 
 
-    public vektor() {
+public class Vektor {
+    private Punkt begin;
+    private Punkt ende;
+
+    public Vektor() {
 	this(0, 0, 0, 0, 0, 0);
     }
 
-    public vektor(punkt P, punkt R) {
+    public Vektor(Punkt P, Punkt R) {
 	this(P.getX(), P.getY(), P.getZ(), R.getX(), R.getY(), R.getZ());
     }
 
-    public vektor(double x1, double y1, double z1, double x2, double y2, double z2) {
-	begin = new punkt();
-	ende = new punkt();
+    public Vektor(double x1, double y1, double z1, double x2, double y2, double z2) {
+	begin = new Punkt();
+	ende = new Punkt();
 
 	begin.setX(x1);
 	begin.setY(y1);
@@ -25,25 +27,25 @@ public class vektor {
 	ende.setZ(z2);
     }
 
-    public punkt getBegin() {
+    public Punkt getBegin() {
 	return begin;
     }
 
-    public punkt getEnde() {
+    public Punkt getEnde() {
 	return ende;
     }
 
-    public void setBegin(punkt begin) {
+    public void setBegin(Punkt begin) {
 	this.begin = begin;
     }
 
-    public void setBegin(vektor temp) {
+    public void setBegin(Vektor temp) {
 	begin.setX(temp.getBegin().getX());
 	begin.setY(temp.getBegin().getY());
 	begin.setZ(temp.getBegin().getZ());
     }
 
-    public void setAll(vektor temp) {
+    public void setAll(Vektor temp) {
 	begin.setX(temp.getBegin().getX());
 	begin.setY(temp.getBegin().getY());
 	begin.setZ(temp.getBegin().getZ());
@@ -53,11 +55,11 @@ public class vektor {
 	ende.setZ(temp.getEnde().getZ());
     }
 
-    public void setEnde(punkt ende) {
+    public void setEnde(Punkt ende) {
 	this.ende = ende;
     }
 
-    public void setEnde(vektor temp) {
+    public void setEnde(Vektor temp) {
 	ende.setX(temp.getEnde().getX());
 	ende.setY(temp.getEnde().getY());
 	ende.setZ(temp.getEnde().getZ());
@@ -69,7 +71,7 @@ public class vektor {
 		+ (ende.getZ() - begin.getZ()) * (ende.getZ() - begin.getZ()));
     }
 
-    public static double betrag(punkt begin, punkt ende) {
+    public static double betrag(Punkt begin, Punkt ende) {
 	return Math.sqrt((ende.getX() - begin.getX()) * (ende.getX() - begin.getX())
 		+ (ende.getY() - begin.getY()) * (ende.getY() - begin.getY())
 		+ (ende.getZ() - begin.getZ()) * (ende.getZ() - begin.getZ()));
