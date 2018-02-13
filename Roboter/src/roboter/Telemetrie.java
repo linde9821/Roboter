@@ -8,12 +8,13 @@ import java.time.Instant;
 public class Telemetrie {
     static int amount = 0;
     int id;
-    
+
     LocalTime timestamp;
     Duration dur;
 
     boolean telemetrieerfassung;
     boolean error;
+    boolean empty;
 
     short speedM1;
     short speedM2;
@@ -31,38 +32,68 @@ public class Telemetrie {
     short voltageM2;
     short voltageM3;
 
+    public Telemetrie() {
+	this(null);
+    }
+
     Telemetrie(Robot crt) {
 	id = amount;
 	amount++;
+	empty = true;
 	update(crt);
     }
 
     private void update(Robot crt) {
 	try {
-	    Instant temp = Instant.now();
-	    timestamp = LocalTime.now();  
-	    
-	    telemetrieerfassung=Robot.isTelemetrieerfassung();
+	    timestamp = LocalTime.now();
 
-	    gradM1 = crt.getPosition((byte) 0);
-	    gradM2 = crt.getPosition((byte) 1);
-	    gradM3 = crt.getPosition((byte) 2);
+	    telemetrieerfassung = Robot.isTelemetrieerfassung();
 
-	    speedM1 = crt.getSpeed((byte) 0);
-	    speedM2 = crt.getSpeed((byte) 1);
-	    speedM3 = crt.getSpeed((byte) 2);
+	    if (telemetrieerfassung) {
+		Instant temp = Instant.now();
 
-	    tempM1 = crt.getTemperature((byte) 0);
-	    tempM2 = crt.getTemperature((byte) 1);
-	    tempM3 = crt.getTemperature((byte) 2);
+		gradM1 = crt.getPosition((byte) 0);
+		gradM2 = crt.getPosition((byte) 1);
+		gradM3 = crt.getPosition((byte) 2);
 
-	    voltageM1 = crt.getVoltage((byte) 0);
-	    voltageM2 = crt.getVoltage((byte) 0);
-	    voltageM3 = crt.getVoltage((byte) 0);
+		speedM1 = crt.getSpeed((byte) 0);
+		speedM2 = crt.getSpeed((byte) 1);
+		speedM3 = crt.getSpeed((byte) 2);
 
-	    dur = Duration.between(temp, Instant.now());
+		tempM1 = crt.getTemperature((byte) 0);
+		tempM2 = crt.getTemperature((byte) 1);
+		tempM3 = crt.getTemperature((byte) 2);
 
-	    error = false;
+		voltageM1 = crt.getVoltage((byte) 0);
+		voltageM2 = crt.getVoltage((byte) 1);
+		voltageM3 = crt.getVoltage((byte) 2);
+
+		dur = Duration.between(temp, Instant.now());
+
+		error = false;
+		empty = false;
+	    } else {
+		gradM1 = -1;
+		gradM2 = -1;
+		gradM3 = -1;
+
+		speedM1 = -1;
+		speedM2 = -1;
+		speedM3 = -1;
+
+		tempM1 = -1;
+		tempM2 = -1;
+		tempM3 = -1;
+
+		voltageM1 = -1;
+		voltageM2 = -1;
+		voltageM3 = -1;
+
+		dur = null;
+
+		error = false;
+	    }
+
 	} catch (Exception e) {
 	    error = true;
 	}
@@ -71,21 +102,19 @@ public class Telemetrie {
     public String getInfo() {
 	StringBuffer strbf = new StringBuffer();
 
-	strbf.append(
-		"Telemetrie " + timestamp.getHour() + ":" + timestamp.getMinute() + ":" + timestamp.getSecond() + "\n");
-	strbf.append("Telemetrie-ID: " + id);
-	
-	strbf.append("Telemetrieerfassung: " + telemetrieerfassung);
+	strbf.append("Telemetrie " + timestamp + "\n");
+	strbf.append("Telemetrie-ID: " + id + "\n");
+	strbf.append("error: " + error + "\n");
+	strbf.append("empty: " + empty + "\n");
 
-	strbf.append("Abfragedauer: " + dur.toMillis() + " ms");
+	// strbf.append("Telemetrieerfassung: " + telemetrieerfassung);
+
+	if (telemetrieerfassung)
+	    strbf.append("Abfragedauer: " + dur.toMillis() + " ms\n");
 
 	strbf.append("grad M1: " + gradM1 + "u\n");
 	strbf.append("grad M2: " + gradM2 + "u\n");
 	strbf.append("grad M3: " + gradM3 + "u\n");
-
-	strbf.append("speed M1: " + speedM1 + " rpm\n");
-	strbf.append("speed M2: " + speedM2 + " rpm\n");
-	strbf.append("speed M3: " + speedM3 + " rpm\n");
 
 	strbf.append("temp M1: " + tempM1 + " °C\n");
 	strbf.append("temp M2: " + tempM2 + " °C\n");
@@ -94,10 +123,16 @@ public class Telemetrie {
 	strbf.append("voltage M1: " + voltageM1 + " V\n");
 	strbf.append("voltage M2: " + voltageM2 + " V\n");
 	strbf.append("voltage M3: " + voltageM3 + " V\n");
-	
-	strbf.append("error: " + error);
+
+	strbf.append("speed M1: " + speedM1 + " rpm\n");
+	strbf.append("speed M2: " + speedM2 + " rpm\n");
+	strbf.append("speed M3: " + speedM3 + " rpm\n");
 
 	return strbf.toString();
+    }
+
+    public String getData() {
+	return ("ID: " + id + " Zeitpunkt: " + timestamp + " error: " + error + " empty: " + empty);
     }
 
     public Telemetrie getTelemetrie() {

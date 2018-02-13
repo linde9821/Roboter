@@ -45,9 +45,12 @@ import roboter.RoboterException;//robot exception
 import roboter.Punkt;//point class
 import roboter.Robot;
 
+/**
+ * Window application for controlling the robot
+ */
 public class Software extends JFrame {
     private static final long serialVersionUID = 1L;
-    private String version = "programm 1.0b";// version
+    private String version = "programm 1.1b";// version
     private Robot myRobot;// robot
     private String device;// devicename (essential for controlling the robot)
     ArrayList<Punkt> liste = new ArrayList<Punkt>();// list of point for ablauf()
@@ -328,7 +331,7 @@ public class Software extends JFrame {
 	contentPane.add(btnLeeren);
 
 	// button Verbinden
-	JButton btnVerbinden = new JButton("Verbinden");
+	JButton btnVerbinden = new JButton("Verbindungstest");
 	btnVerbinden.addKeyListener(new KeyAdapter() {
 	    @Override
 	    public void keyPressed(KeyEvent e) {
@@ -342,7 +345,7 @@ public class Software extends JFrame {
 		    connectionTest();
 	    }
 	});
-	btnVerbinden.setFont(new Font("Arial", Font.PLAIN, 12));
+	btnVerbinden.setFont(new Font("Arial", Font.PLAIN, 11));
 	btnVerbinden.setBackground(SystemColor.controlShadow);
 	btnVerbinden.setBounds(203, 112, 119, 23);
 	contentPane.add(btnVerbinden);
@@ -567,14 +570,19 @@ public class Software extends JFrame {
 	liste.add(new Punkt(-200, 100, 40));
 	liste.add(new Punkt(-250, 50, 0));
 	liste.add(new Punkt(170, 0, 40));
+	
+	//enables telemetrie (default setting)
+	Robot.setTelemetrieerfassung(rbTelemetrie.isSelected());
     }
 
-    // simulates movment
+    /**
+     * Simulates movment to a point
+     */
     private void simulate() {
 	int x, y, z;// var. for coordinates
 
 	if (rdbtnStatusausgaben.isSelected())
-	    textArea.append("Simulation wird gestartet\n\n");
+	    textArea.append("**************************\nSimulation wird gestartet\n");
 
 	try {
 	    // checks for empty Input
@@ -757,6 +765,7 @@ public class Software extends JFrame {
 
 	    if (rdbtnFehlermeldungen.isSelected())
 		JOptionPane.showMessageDialog(null, e.getMessage());
+	    
 	} catch (NumberFormatException e) {
 	    e.printStackTrace();
 	    if (rdbtnStatusausgaben.isSelected())
@@ -775,11 +784,13 @@ public class Software extends JFrame {
 
 	    e.printStackTrace();
 	} finally {
-	    textArea.append("Simulation beendet\n\n");
+	    textArea.append("Simulation beendet\n**************************\n");
 	}
     }
 
-    // methode which will calls the robot
+    /**
+     * Performs movement to a point
+     */
     private void perform() {
 	Punkt p = null;
 	int x, y, z;// var. for coordinates
@@ -788,7 +799,7 @@ public class Software extends JFrame {
 	boolean autokorrektur = rdbtnAutokorrektur.isSelected();
 
 	if (statusausgabe)
-	    textArea.append("Starte Methode\n\n");
+	    textArea.append("**************************\nAusführen beginnt\n");
 
 	try {
 	    // checks for empty Input
@@ -923,10 +934,7 @@ public class Software extends JFrame {
 		throw new RoboterException("Der Punkt ist nicht ansteuerbar", myRobot);
 
 	    if (statusausgabe)
-		textArea.append("Bewegung zum Punkt P(" + x + "|" + y + "|" + z + ")\n\n");
-
-	    if (statusausgabe)
-		textArea.append("Ausführen beginnt\n");
+		textArea.append("\nBewegung zum Punkt P(" + x + "|" + y + "|" + z + ")\n\n");
 
 	    tfX.requestFocus();
 	    tfX.selectAll();
@@ -943,8 +951,6 @@ public class Software extends JFrame {
 
 		    disconnect();
 		    textArea.append("Bewegung beendet. Sie hat " + dur.toMillis() + " ms gedauert.\n");
-		} else {
-		    textArea.append("Keine Verbindung zum Roboter möglich\n");
 		}
 	    } catch (RoboterException e) {
 		e.printStackTrace();
@@ -955,11 +961,11 @@ public class Software extends JFrame {
 		if (fehlermeldung)
 		    JOptionPane.showMessageDialog(null, e.getMessage());
 		e.printStackTrace();
+		
+		 e.analyseTelemetrie();
 	    } catch (NullPointerException e) {
 		e.printStackTrace();
 		System.out.print("Nullpointer Exception");
-	    } finally {
-		textArea.append("Ausführen beendet\n\n");
 	    }
 	}
 	// error handling
@@ -1001,12 +1007,18 @@ public class Software extends JFrame {
 		JOptionPane.showMessageDialog(null, "Unbekannter Fehler aufgetreten");
 
 	    e.printStackTrace();
+	} finally {
+	    textArea.append("Ausführen beendet\n**************************\n");
 	}
     }
 
-    // methode for ablauf
+    /**
+     * Performs movements to a list point
+     */
     private void ablauf() {
 	final long delay = 1000; // delay between 2 operaton in ms
+
+	textArea.append("**************************\nAblauf beginnt\n");
 
 	if (connect()) {
 	    Instant begin = Instant.now();
@@ -1026,21 +1038,25 @@ public class Software extends JFrame {
 		} catch (RoboterException e) {
 		    // TODO Auto-generated catch block
 		    e.printStackTrace();
+		    e.analyseTelemetrie();
 		}
 	    }
-	    
+
 	    Duration dur = Duration.between(begin, Instant.now());
 	    disconnect();
 
-	    textArea.append("Ablauf beendet. Er hat " + dur.toMillis() + " ms gedauert.\n");
-	} else {
-	    textArea.append("keine Verbindung herstellbar\n");
+	    textArea.append("Ausführung hat " + dur.toMillis() + " ms gedauert.\n");
 	}
+
+	textArea.append("Ablauf beendet\n**************************\n");
     }
 
-    // methode for the order-tabel (not implimented)
+    /**
+     * takes orders from the orders and executes them
+     */
     private void befehl() {
 	boolean statusausgaben = rdbtnStatusausgaben.isSelected();
+	textArea.append("**************************\nBefehlsoperation beginnt\n");
 
 	int befehlsId = Integer.parseInt(JOptionPane.showInputDialog("Befehlsnummer eingeben."));
 
@@ -1070,7 +1086,7 @@ public class Software extends JFrame {
 	    break;
 
 	case (1):
-
+	    
 	    break;
 
 	case (2):
@@ -1087,10 +1103,15 @@ public class Software extends JFrame {
 
 	default:
 	}
+
+	textArea.append("Befehlsoperation beendet\n**************************\n");
     }
 
-    // trys to connect and disconnect
+    /**
+     * starts a connectiontest (connects and disconnects)
+     */
     private void connectionTest() {
+	textArea.append("**************************\nVerbindungstest gestartet\n");
 	if (connect()) {
 	    for (int i = 0; i < 3; i++) {
 		textArea.append(
@@ -1143,13 +1164,17 @@ public class Software extends JFrame {
 
 	    if (rdbtnStatusausgaben.isSelected())
 		textArea.append("Es konnte eine Verbindung zum Roboter hergestellt werden!\n\n");
-	    
+
 	    disconnect();
 
 	}
+
+	textArea.append("Verbindungstest beendet\n**************************\n");
     }
 
-    // clears textArea
+    /**
+     * emptys Textarea
+     */
     private void emptyTextArea() {
 	textArea.setText("");
 	tfX.setText("");
@@ -1157,7 +1182,9 @@ public class Software extends JFrame {
 	tfZ.setText("");
     }
 
-    // punkt zu Liste hinzufügen
+    /**
+     * adds a point to the list of points 
+     */
     private void hinzufuegen() {
 	int x, y, z;// var. for coordinates
 
@@ -1357,7 +1384,9 @@ public class Software extends JFrame {
 	}
     }
 
-    // manual control
+    /**
+     * sets one servos position to a bypass value
+     */
     private void set() {
 	byte id;
 	short goal;
@@ -1505,12 +1534,14 @@ public class Software extends JFrame {
 	}
     }
 
-    // manual read
+    /**
+     * reads one servos position 
+     */
     private void auslesen() {
 	byte id;
 
 	if (rdbtnStatusausgaben.isSelected())
-	    textArea.append("Auslesen wird gestartet\n\n");
+	    textArea.append("**************************\nAuslesen wird gestartet\n");
 
 	try {
 	    // checks for empty Input
@@ -1584,14 +1615,14 @@ public class Software extends JFrame {
 	} catch (EmptyInputException e) {
 	    e.printStackTrace();
 	    if (rdbtnStatusausgaben.isSelected())
-		textArea.append("Es sind keine Werte eingegeben\n\n");
+		textArea.append("Es ist keine Motor eingegeben\n");
 
 	    if (rdbtnFehlermeldungen.isSelected())
-		JOptionPane.showMessageDialog(null, "Es sind keine Werte eingegeben");
+		JOptionPane.showMessageDialog(null, "Es ist keine Motor eingegeben");
 	} catch (ControlInputException e) {
 	    e.printStackTrace();
 	    if (rdbtnStatusausgaben.isSelected())
-		textArea.append("Keine Autokorrektur möglich\n\n");
+		textArea.append("Keine Autokorrektur möglich\n");
 
 	    if (rdbtnFehlermeldungen.isSelected())
 		JOptionPane.showMessageDialog(null, "Keine Autokorrektur möglich");
@@ -1601,14 +1632,18 @@ public class Software extends JFrame {
 	} catch (Exception e) {
 	    e.printStackTrace();
 	    if (rdbtnStatusausgaben.isSelected())
-		textArea.append("Unbekannter Fehler bei der Eingabe\n\n");
+		textArea.append("Unbekannter Fehler bei der Eingabe\n");
 
 	    if (rdbtnFehlermeldungen.isSelected())
 		JOptionPane.showMessageDialog(null, "Unbekannter Fehler bei der Eingabe");
 	}
+	textArea.append("Auslesen beendet\n**************************\n");
+
     }
 
-    // closes program
+    /**
+     * closes frame 
+     */
     private void close() {
 	textArea.append("Beende Programm\n");
 	System.exit(0);
@@ -1616,6 +1651,10 @@ public class Software extends JFrame {
 
     /*
      * within functions
+     */
+    
+    /**
+     * start procedure after creating the frame 
      */
     private void startUpProcedure() {
 	int dialogButton = JOptionPane.YES_NO_OPTION;
@@ -1646,20 +1685,22 @@ public class Software extends JFrame {
 	    connectionTest();
     }
 
-    // connects with robot (disconnect() should be called after operation is done)
+    /**
+     * connects with robot 
+     */ 
     private boolean connect() {
 	try {
 	    myRobot = new Robot(device);
 	    return true;
 	} catch (RoboterException e) {
 	    e.printStackTrace();
-	    
+
 	    if (rdbtnStatusausgaben.isSelected())
 		textArea.append("Es konnte keine Verbindung zum Roboter hergestellt werden\n");
 
 	    if (rdbtnFehlermeldungen.isSelected())
 		JOptionPane.showMessageDialog(null, "Es konnte keine Verbindung zum Roboter hergestellt werden\n");
-	    
+
 	    return false;
 	} catch (Exception e) {
 	    if (rdbtnStatusausgaben.isSelected())
@@ -1672,14 +1713,16 @@ public class Software extends JFrame {
 	}
     }
 
-    // disconnects from the robot
+    /**
+     * disconnects from robot 
+     */ 
     private void disconnect() {
 	try {
 	    myRobot.manualDisconnect();
 	    myRobot = null;
 	} catch (RoboterException e) {
 	    e.printStackTrace();
-	    
+
 	    if (rdbtnStatusausgaben.isSelected())
 		textArea.append("Es konnte keine Verbindung zum Roboter hergestellt werden!\n\n");
 
@@ -1687,7 +1730,7 @@ public class Software extends JFrame {
 		JOptionPane.showMessageDialog(null, "Es konnte keine Verbindung zum Roboter hergestellt werden\n");
 	} catch (Exception e) {
 	    e.printStackTrace();
-	    
+
 	    if (rdbtnStatusausgaben.isSelected())
 		textArea.append("Unbekannter Fehler beim Disconnecten aufgetreten!\n");
 
@@ -1696,7 +1739,9 @@ public class Software extends JFrame {
 	}
     }
 
-    // radioButton Statusausgabe control
+    /**
+     * controlls radiobutton Statusausgabe  
+     */ 
     private void rbS(int typ) {
 	if (typ == 0)
 	    rdbtnStatusausgaben.setSelected(!rdbtnStatusausgaben.isSelected());
@@ -1712,21 +1757,27 @@ public class Software extends JFrame {
 	textArea.append("Statusausgabe auf " + textArea.isVisible() + " gesetzt\n\n");
     }
 
-    // radioButton Fehlermeldungen control
+    /**
+     * controlls radiobutton Fehlermeldung  
+     */ 
     private void rbF(int typ) {
 	if (typ == 0)
 	    rdbtnFehlermeldungen.setSelected(!rdbtnFehlermeldungen.isSelected());
 	textArea.append("Fehlerausgabe auf " + rdbtnFehlermeldungen.isSelected() + " gesetzt\n\n");
     }
 
-    // radioButton Autokorrektur control
+    /**
+     * controlls radiobutton Autokorrektur   
+     */ 
     private void rbA(int typ) {
 	if (typ == 0)
 	    rdbtnAutokorrektur.setSelected(!rdbtnAutokorrektur.isSelected());
 	textArea.append("Autokorrektur auf " + rdbtnAutokorrektur.isSelected() + " gesetzt\n\n");
     }
 
-    // radioButton Ablauf control
+    /**
+     * controlls radiobutton Ablaufkontrolle   
+     */ 
     private void rbAL(int typ) {
 	if (typ == 0)
 	    rdbtnStandardablauf.setSelected(!rdbtnStandardablauf.isSelected());
@@ -1757,7 +1808,9 @@ public class Software extends JFrame {
 	}
     }
 
-    // radioButton Telemetrie
+    /**
+     * controlls radiobutton Telemetrie   
+     */ 
     private void rbT(int typ) {
 	if (typ == 0)
 	    rbTelemetrie.setSelected(!rbTelemetrie.isSelected());

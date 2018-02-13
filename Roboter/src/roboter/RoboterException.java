@@ -1,10 +1,14 @@
 package roboter;
 
+import java.awt.EventQueue;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+
+import gui.Telemetrieauswerter;
+
 import java.time.LocalDateTime;
 
 public class RoboterException extends Exception {
@@ -55,7 +59,7 @@ public class RoboterException extends Exception {
 	    }
 
 	} catch (NullPointerException e) {
-	    e.printStackTrace();
+	    //e.printStackTrace();
 	    System.out.println(
 		    "Keine Telemetriedaten auslesbar. (Vermutlich war grundsätzlich keine Verbindung herstellbar)");
 
@@ -63,6 +67,19 @@ public class RoboterException extends Exception {
 	}
 
 	return strbf.toString();
+    }
+    
+    public void analyseTelemetrie() {
+	EventQueue.invokeLater(new Runnable() {
+	    public void run() {
+		try {	  
+		    Telemetrieauswerter frame = new Telemetrieauswerter(ExceptionRobot.getTelemetrie());
+		    frame.setVisible(true);
+		} catch (Exception e) {
+		    e.printStackTrace();
+		}
+	    }
+	});
     }
 
     private void writeToProtocol(String s) {
