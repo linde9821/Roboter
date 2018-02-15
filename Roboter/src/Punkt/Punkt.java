@@ -1,4 +1,4 @@
-package roboter;
+package Punkt;
 
 public class Punkt {
 
@@ -37,14 +37,26 @@ public class Punkt {
     public void setZ(double z) {
 	this.z = z;
     }
+    
+    public void translate(double x, double y, double z) {
+	translate(new Punkt(x, y, z));
+    }
+    
+    public void translate(Punkt T) {
+	double x = T.getX();
+	double y = T.getY();
+	double z = T.getZ();
+	
+	this.x += x;
+	this.y += y;
+	this.z += z;
+    }
 
     public static double betrag(Punkt P, Punkt R) {
 	double a = (P.x - R.x) * (P.x - R.x);
 	double b = (P.y - R.y) * (P.y - R.y);
 	double c = (P.z - R.z) * (P.z - R.z);
 
-	double betrag = Math.sqrt(a + b + c);
-
-	return betrag;
+	return Math.sqrt(a + b + c);
     }
 }

@@ -5,14 +5,19 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+
 import javax.swing.JOptionPane;
 
+import Punkt.Punkt;
 import dynamixel.Dynamixel;
+import telemetrie.Telemetrie;
 
 public class Robot implements Cloneable {
-    public static final String version = "robot 2.0b"; // current version
+    public static final String version = "robot 2.1"; // current version
     public static final double B1_DIAMATER = 52.5f * 2;// Durchmesser Bauteil 1
     public static final double B2_LENGTH = 222;// Länge Bauteil 2
     public static final double B3_LENGTH = 197;// Länge Bauteil 3
@@ -47,9 +52,12 @@ public class Robot implements Cloneable {
     short ADDR_MX_GOAL_POSITION = 30;
     short ADDR_MX_PRESENT_POSITION = 36;
 
-    short ADD_Present_Voltage = 42;
-    short ADD_Present_Temp = 43;
-    short ADD_Moving_Speed_Low = 32;
+    short ADDR_Present_Voltage = 42;
+    short ADDR_Present_Temp = 43;
+    short ADDR_Moving_Speed_Low = 32;
+
+    // [in Source Code]-Settings
+    private final boolean allowTelemetrieDuringMovment = true;
 
     // Protocol version
     int PROTOCOL_VERSION = 1; // See which protocol version is used in the Dynamixel
@@ -140,19 +148,20 @@ public class Robot implements Cloneable {
 		throw new RoboterException(dynamixel.getRxPacketError(PROTOCOL_VERSION, dxl_error), this);
 	    } else {
 		System.out.println("Dynamixel has been successfully connected");
+		writeToProtocol("Erfolgreich Connected");
 	    }
 
 	    // set default moving speed values
-	    dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[0], ADD_Moving_Speed_Low, speedM1);
-	    dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[1], ADD_Moving_Speed_Low, speedM2);
-	    dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[2], ADD_Moving_Speed_Low, speedM3);
+	    dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[0], ADDR_Moving_Speed_Low, speedM1);
+	    dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[1], ADDR_Moving_Speed_Low, speedM2);
+	    dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[2], ADDR_Moving_Speed_Low, speedM3);
 
 	    // initialise angel values with current servo positions
 	    grad1 = this.getPosition(DXL_ID[0]);
 	    grad2 = this.getPosition(DXL_ID[1]);
 	    grad3 = this.getPosition(DXL_ID[2]);
 
-	    addTele();
+	    addCurrentTelemetrie();
 
 	}
 	writeToProtocol("Erfolgreich initialisiert");
@@ -193,7 +202,7 @@ public class Robot implements Cloneable {
 
     // read and write
     public short getSpeed(byte ID) {
-	return dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, ID, ADD_Moving_Speed_Low);
+	return dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, ID, ADDR_Moving_Speed_Low);
     }
 
     public short getPosition(byte ID) {
@@ -201,23 +210,21 @@ public class Robot implements Cloneable {
     }
 
     public void setSpeed(byte ID, short speed) {
-	dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, ID, ADD_Moving_Speed_Low, speed);
+	dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, ID, ADDR_Moving_Speed_Low, speed);
     }
 
     public short getVoltage(byte ID) {
-	return dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, ID, ADD_Present_Voltage);
+	return dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, ID, ADDR_Present_Voltage);
     }
 
     public short getTemperature(byte ID) {
-	return dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, ID, ADD_Present_Temp);
+	return dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, ID, ADDR_Present_Temp);
     }
 
     // manual writing indivitual motors
     public void setPosition(byte id, short goal) {
 	try {
 	    writeGoalPosition(id, goal);
-
-	    addTele();
 	} catch (RoboterException e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
@@ -227,7 +234,9 @@ public class Robot implements Cloneable {
     // moves the motors to the calculated positions within the robot to point
     // procedure
     public void writeGoalPosition(byte id, double goal) throws RoboterException {
-	addTele();
+	addCurrentTelemetrie();
+
+	Instant beg = Instant.now();
 
 	if (goal < min[id] || goal > max[id]) {
 	    throw new RoboterException("Nicht nutzbarer Wert für Motor " + id + " mit " + goal, this);
@@ -250,9 +259,16 @@ public class Robot implements Cloneable {
 
 		dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, id, ADDR_MX_GOAL_POSITION, (short) goal);
 
+		if (allowTelemetrieDuringMovment)
+		    addCurrentTelemetrie();
+
+		//testen 
+		if (Duration.between(beg, Instant.now()).compareTo(Duration.ofMillis(0)) > 1500)
+		    throw new RoboterException("Zeitablauf", this);
+
 	    } while (Math.abs(dxl_present_position - (short) goal) >= ADDR_MX_PRESENT_POSITION);
 
-	    addTele();
+	    addCurrentTelemetrie();
 
 	} else
 	    throw new RoboterException("Zu hohe Temperatur bei Motor  " + id + " mit " + getTemperature(id), this);
@@ -280,6 +296,8 @@ public class Robot implements Cloneable {
 	}
 
 	writeToProtocol("Bewegung abgeschlossen");
+
+	// throw new RoboterException("Telemetrieauswertungstest", this);
 
 	// Wenn beendet
 	return true;
@@ -338,7 +356,9 @@ public class Robot implements Cloneable {
 	    simRobot.writeToProtocol("P ist nicht ansteuerbar");
 	}
 
+	// not best solution
 	simRobot.decreaseAmount();
+
 	return simRobot;
     }
 
@@ -510,11 +530,14 @@ public class Robot implements Cloneable {
 	try {
 	    dynamixel.closePort(port_num);
 	    dynamixel.clearPort(port_num);
+	    writeToProtocol("Erfolgreich Disconnected");
 	    return true;
 	} catch (Exception e) {
 	    e.printStackTrace();
 	    throw new RoboterException("Fehler beim Disconnecten", this);
-	    //return false;
+	    // return false;
+	} finally {
+	    decreaseAmount();
 	}
     }
 
@@ -529,13 +552,16 @@ public class Robot implements Cloneable {
     }
 
     // addes current telemetrie to telemetrie-list
-    void addTele() {
+    void addCurrentTelemetrie() {
+	final int storagePoints = 10000;
 	if (telemetrieerfassung) {
-	    if (robotTelemetrie.size() > 32) {
+	    if (robotTelemetrie.size() > storagePoints) {
 		robotTelemetrie.remove(0);
 	    }
 
+	    Instant now = Instant.now();
 	    robotTelemetrie.add(new Telemetrie(this));
+	    System.out.println("Dauer für eine Telemetrieerfassung: " + Duration.between(now, Instant.now()));
 
 	    this.writeToProtocol(robotTelemetrie.get(robotTelemetrie.size() - 1).getInfo());
 	}
