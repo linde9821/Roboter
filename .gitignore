@@ -23,6 +23,7 @@ Protokoll.txt
 TelemetrieDaten
 TelemetrieException
 #.tmt
+standardTelemetrieDatensatz.tmt
 
 #javadoc
 doc

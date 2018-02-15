@@ -112,12 +112,12 @@ public class Telemetrieauswerter extends JFrame {
 	    @Override
 	    public void keyPressed(KeyEvent e) {
 		if (e.getKeyCode() == KeyEvent.VK_ENTER)
-		    dateiLaden(telemetrieParameter);
+		    dateiLaden(null);
 	    }
 	});
 	btnDateiLaden.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent e) {
-		dateiLaden(telemetrieParameter);
+		dateiLaden(null);
 	    }
 	});
 	btnDateiLaden.setBounds(10, 11, 115, 23);
@@ -261,14 +261,19 @@ public class Telemetrieauswerter extends JFrame {
 	} else {
 	    telemetrieListe = new ArrayList<Telemetrie>(telemetrieParameter);
 
-	    JOptionPane.showMessageDialog(null, "Übergebener Telemetriedatensatz wird geladen.");
-
 	    for (Telemetrie datensatz : telemetrieListe) {
 		programmtelemetrie.addElement(datensatz.getData());
+		btnDatensatzUntersuchen.setVisible(true);
 	    }
+
+	    if (telemetrieListe.size() > 0)
+		JOptionPane.showMessageDialog(null, "Übergebener Telemetriedatensatz wird geladen.");
+	    else
+		close();
+
 	}
 	list.setModel(programmtelemetrie);
-
+	telemetrieParameter = null;
     }
 
     private void close() {

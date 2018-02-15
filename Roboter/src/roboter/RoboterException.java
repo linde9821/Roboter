@@ -13,7 +13,9 @@ import java.util.ArrayList;
 import telemetrie.Telemetrie;
 import telemetrie.Telemetrieauswerter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 public class RoboterException extends Exception {
     /**
@@ -22,7 +24,8 @@ public class RoboterException extends Exception {
     private static final long serialVersionUID = 1L;
 
     private Robot ExceptionRobot;
-    private LocalDateTime time;
+    private LocalTime time;
+    private LocalDate date;
 
     private static int amount = 0;
     private int id;
@@ -33,7 +36,9 @@ public class RoboterException extends Exception {
 
     public RoboterException(String s, Robot current) {
 	super(s);
-	time = LocalDateTime.now();
+	time = LocalTime.now();
+	date = LocalDate.now();
+
 	ExceptionRobot = current.clone();
 
 	id = amount;
@@ -51,6 +56,15 @@ public class RoboterException extends Exception {
 	writeToProtocol("************************************************");
 
 	saveTelemetrie();
+
+	analyseTelemetrie();
+
+	try {
+	    current.manualDisconnect();
+	} catch (RoboterException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
     }
 
     private void saveTelemetrie() {
@@ -85,7 +99,7 @@ public class RoboterException extends Exception {
     }
 
     public String getTelemetrieInfos() {
-	final ArrayList<Telemetrie> exceptionTelemetrie = ExceptionRobot.getTelemetrie();
+	ArrayList<Telemetrie> exceptionTelemetrie = ExceptionRobot.getTelemetrie();
 
 	StringBuffer strbf = new StringBuffer();
 
@@ -93,10 +107,11 @@ public class RoboterException extends Exception {
 	    if (exceptionTelemetrie.isEmpty())
 		throw new NullPointerException();
 
+	    // sollte nix verändern da dies eigentlich nicht passieren kann
 	    for (int i = 0; i < exceptionTelemetrie.size(); i++) {
-		strbf.append("Zeitpunkt der Telemetriedaten: " + exceptionTelemetrie.get(i).timestamp.getHour() + ":"
-			+ exceptionTelemetrie.get(i).timestamp.getMinute() + ":"
-			+ exceptionTelemetrie.get(i).timestamp.getSecond() + "\n");
+		if (time.isBefore(exceptionTelemetrie.get(i).timestamp)
+			|| time.equals(exceptionTelemetrie.get(i).timestamp))
+		    exceptionTelemetrie.get(i).setError(true);
 
 		strbf.append(exceptionTelemetrie.get(i).getInfo());
 	    }
@@ -113,16 +128,18 @@ public class RoboterException extends Exception {
     }
 
     public void analyseTelemetrie() {
-	EventQueue.invokeLater(new Runnable() {
-	    public void run() {
-		try {
-		    Telemetrieauswerter frame = new Telemetrieauswerter(ExceptionRobot.getTelemetrie());
-		    frame.setVisible(true);
-		} catch (Exception e) {
-		    e.printStackTrace();
+	if (ExceptionRobot.getTelemetrie().size() > 0) {
+	    EventQueue.invokeLater(new Runnable() {
+		public void run() {
+		    try {
+			Telemetrieauswerter frame = new Telemetrieauswerter(ExceptionRobot.getTelemetrie());
+			frame.setVisible(true);
+		    } catch (Exception e) {
+			e.printStackTrace();
+		    }
 		}
-	    }
-	});
+	    });
+	}
     }
 
     private void writeToProtocol(String s) {

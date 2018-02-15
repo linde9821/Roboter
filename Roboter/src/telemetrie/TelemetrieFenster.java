@@ -19,7 +19,7 @@ public class TelemetrieFenster extends JFrame {
      * Create the frame.
      */
     public TelemetrieFenster(Telemetrie datensatz) {
-	setBounds(100, 100, 257, 367);
+	setBounds(100, 100, 263, 376);
 	contentPane = new JPanel();
 	contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 	setContentPane(contentPane);
@@ -27,7 +27,7 @@ public class TelemetrieFenster extends JFrame {
 	
 	JTextArea textArea = new JTextArea();
 	textArea.setEditable(false);
-	textArea.setBounds(10, 11, 231, 316);
+	textArea.setBounds(10, 11, 237, 325);
 	contentPane.add(textArea);
 	
 	setTitle("Datensatz " + datensatz.id);

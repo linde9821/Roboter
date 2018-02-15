@@ -62,7 +62,7 @@ import javax.swing.JMenuItem;
  */
 public class Software extends JFrame {
     private static final long serialVersionUID = 1L;
-    private String version = "1.1b";// version
+    private String version = "1.1.1";// version
     private Robot myRobot;// robot
     private String device;// devicename (essential for controlling the robot)
 
@@ -146,6 +146,16 @@ public class Software extends JFrame {
 
 	liste = new ArrayList<Punkt>();// list of point for ablauf();
 	roboterExceptionListe = new ArrayList<RoboterException>();
+
+	File verzeichnis = new File("." + File.separator + "TelemetrieException");
+
+	if (!verzeichnis.exists())
+	    verzeichnis.mkdir();
+
+	verzeichnis = new File("." + File.separator + "TelemetrieDaten");
+
+	if (!verzeichnis.exists())
+	    verzeichnis.mkdir();
 
 	// Titel setzen
 	setTitle("Robot Toolkit " + version);
@@ -287,7 +297,8 @@ public class Software extends JFrame {
 			}
 		    }
 		} else {
-		    JOptionPane.showMessageDialog(null, "Es existieren aktuell keine Telemetriedaten in der Laufzeitumgebung.");
+		    JOptionPane.showMessageDialog(null,
+			    "Es existieren aktuell keine Telemetriedaten in der Laufzeitumgebung.");
 		}
 
 	    }
@@ -311,8 +322,9 @@ public class Software extends JFrame {
 			    }
 			}
 		    });
-		}else {
-		    JOptionPane.showMessageDialog(null, "Es existieren aktuell keine Telemetriedaten in der Laufzeitumgebung.");
+		} else {
+		    JOptionPane.showMessageDialog(null,
+			    "Es existieren aktuell keine Telemetriedaten in der Laufzeitumgebung.");
 		}
 	    }
 	});
@@ -776,12 +788,8 @@ public class Software extends JFrame {
 	textArea.append(version + "\n" + Robot.version + "\ndevicename: " + this.device + " \n\n");
 
 	// sets up default point for ablauf()
-	liste.add(new Punkt(170, 0, 40));
-	liste.add(new Punkt(200, 100, 50));
-	liste.add(new Punkt(100, 200, -50));
-	liste.add(new Punkt(-200, 100, 40));
-	liste.add(new Punkt(-250, 50, 0));
-	liste.add(new Punkt(170, 0, 40));
+	liste.add(new Punkt(250, 50, 180));
+	liste.add(new Punkt(200, 50, 40));
 
 	// enables telemetrie (default setting)
 	Robot.setTelemetrieerfassung(rbTelemetrie.isSelected());
@@ -1180,7 +1188,7 @@ public class Software extends JFrame {
 		if (fehlermeldung)
 		    JOptionPane.showMessageDialog(null, e.getMessage());
 
-		e.analyseTelemetrie();
+		//e.analyseTelemetrie();
 	    } catch (NullPointerException e) {
 		e.printStackTrace();
 		System.out.print("Nullpointer Exception");
@@ -1229,14 +1237,22 @@ public class Software extends JFrame {
 	    e.printStackTrace();
 	} finally {
 	    textArea.append("Ausführen beendet\n**************************\n");
+	    try {
+		myRobot.manualDisconnect();
+	    } catch (RoboterException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	    }
 	}
+	System.out.println("dsabhkdashiludhasklhg");
+	
     }
 
     /**
      * Performs movements to a list point
      */
     private void ablauf() {
-	final long delay = 1500; // delay between 2 operaton in ms
+	final long delay = 200; // delay between 2 operaton in ms
 
 	textArea.append("**************************\nAblauf beginnt\n");
 
@@ -1245,21 +1261,33 @@ public class Software extends JFrame {
 
 	    for (int i = 0; i < liste.size(); i++) {
 		try {
+		    System.out.println("I:" + i);
+		    
 		    myRobot.moveto(liste.get(i));
+
+		    System.out.println(myRobot.getTemperature((byte) 0));
+		    System.out.println(myRobot.getTemperature((byte) 1));
+		    System.out.println(myRobot.getTemperature((byte) 2));
 
 		    textArea.append("Punkt " + (i + 1) + " von " + liste.size() + " angesteuert\n");
 
 		    try {
 			Thread.sleep(delay);
 		    } catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		    }
 		} catch (RoboterException e) {
 
 		    roboterExceptionListe.add(e);
+
+		    i = liste.size();
+		    
 		    // TODO Auto-generated catch block
 		    e.printStackTrace();
+
+		    System.out.println("Abbr");
+		    
+		    // e.analyseTelemetrie();
 		}
 	    }
 
@@ -1267,12 +1295,16 @@ public class Software extends JFrame {
 
 	    aktuelleTelemetrie = myRobot.getTelemetrie();
 
+	    System.out.println("dsddsdssssss");
+	    
 	    disconnect();
 
 	    textArea.append("Ausführung hat " + dur.toMillis() + " ms gedauert.\n");
 	}
 
 	textArea.append("Ablauf beendet\n**************************\n");
+	
+	System.out.println("Abbruch");
     }
 
     /**
@@ -1872,6 +1904,8 @@ public class Software extends JFrame {
      */
     private void close() {
 	textArea.append("Beende Programm\n");
+	System.gc();
+	this.disconnect();
 	this.setVisible(false);
     }
 
@@ -2047,6 +2081,9 @@ public class Software extends JFrame {
 	textArea.append("Telemetrie Erfassung auf " + rbTelemetrie.isSelected() + " gesetzt\n\n");
 
 	Robot.setTelemetrieerfassung(rbTelemetrie.isSelected());
+
+	// if (!rbTelemetrie.isSelected())
+	// aktuelleTelemetrie = null;
     }
 
     private void generateReadme() {
