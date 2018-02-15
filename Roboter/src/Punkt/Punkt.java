@@ -1,4 +1,4 @@
-package roboter;
+package Punkt;
 
 public class Punkt {
 

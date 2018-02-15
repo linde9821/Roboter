@@ -72,7 +72,7 @@
 package testprogramme;
 
 import roboter.RoboterException;
-import roboter.Punkt;
+import Punkt.Punkt;
 import roboter.Robot;
 
 public class test {

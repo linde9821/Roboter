@@ -1,15 +1,23 @@
-package roboter;
+package telemetrie;
 
 import java.time.LocalTime;
+
+import roboter.Robot;
+
+import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
 
 //testing needed 
-public class Telemetrie {
+public class Telemetrie implements Serializable{
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     static int amount = 0;
     int id;
 
-    LocalTime timestamp;
+    public LocalTime timestamp;
     Duration dur;
 
     boolean telemetrieerfassung;
@@ -36,7 +44,7 @@ public class Telemetrie {
 	this(null);
     }
 
-    Telemetrie(Robot crt) {
+    public Telemetrie(Robot crt) {
 	id = amount;
 	amount++;
 	empty = true;

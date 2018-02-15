@@ -1,25 +1,25 @@
-package gui;
-
-import java.awt.BorderLayout;
-import java.awt.EventQueue;
+package telemetrie;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-
-import roboter.Telemetrie;
 import javax.swing.JTextArea;
+import javax.swing.border.EmptyBorder;
 
 public class TelemetrieFenster extends JFrame {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+    
     private JPanel contentPane;
 
 
     /**
      * Create the frame.
      */
-    public TelemetrieFenster(Telemetrie Datensatz) {
-	setBounds(100, 100, 645, 472);
+    public TelemetrieFenster(Telemetrie datensatz) {
+	setBounds(100, 100, 257, 367);
 	contentPane = new JPanel();
 	contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 	setContentPane(contentPane);
@@ -27,10 +27,13 @@ public class TelemetrieFenster extends JFrame {
 	
 	JTextArea textArea = new JTextArea();
 	textArea.setEditable(false);
-	textArea.setBounds(10, 11, 616, 411);
+	textArea.setBounds(10, 11, 231, 316);
 	contentPane.add(textArea);
 	
-	textArea.append(Datensatz.getInfo());
+	setTitle("Datensatz " + datensatz.id);
 	
+	setResizable(false);
+	
+	textArea.append(datensatz.getInfo());
     }
 }

@@ -1,6 +1,5 @@
 package roboter;
 
-import java.awt.EventQueue;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -10,11 +9,12 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+
 import javax.swing.JOptionPane;
 
+import Punkt.Punkt;
 import dynamixel.Dynamixel;
-import gui.TelemetrieFenster;
-import gui.Telemetrieauswerter;
+import telemetrie.Telemetrie;
 
 public class Robot implements Cloneable {
     public static final String version = "robot 2.1"; // current version
@@ -55,10 +55,9 @@ public class Robot implements Cloneable {
     short ADDR_Present_Voltage = 42;
     short ADDR_Present_Temp = 43;
     short ADDR_Moving_Speed_Low = 32;
-    
-    //[in Source Code]-Settings
-    private final boolean allowTelemetrieDuringMovment = false;
-    
+
+    // [in Source Code]-Settings
+    private final boolean allowTelemetrieDuringMovment = true;
 
     // Protocol version
     int PROTOCOL_VERSION = 1; // See which protocol version is used in the Dynamixel
@@ -236,7 +235,7 @@ public class Robot implements Cloneable {
     // procedure
     public void writeGoalPosition(byte id, double goal) throws RoboterException {
 	addCurrentTelemetrie();
-	
+
 	Instant beg = Instant.now();
 
 	if (goal < min[id] || goal > max[id]) {
@@ -259,12 +258,13 @@ public class Robot implements Cloneable {
 			"[ID: " + id + "] GoalPos:" + (short) goal + " PresPos: " + dxl_present_position + " \n");
 
 		dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, id, ADDR_MX_GOAL_POSITION, (short) goal);
-		
+
 		if (allowTelemetrieDuringMovment)
 		    addCurrentTelemetrie();
-		
+
+		//testen 
 		if (Duration.between(beg, Instant.now()).compareTo(Duration.ofMillis(0)) > 1500)
-			throw new RoboterException("Zeitablauf", this);
+		    throw new RoboterException("Zeitablauf", this);
 
 	    } while (Math.abs(dxl_present_position - (short) goal) >= ADDR_MX_PRESENT_POSITION);
 
@@ -296,7 +296,9 @@ public class Robot implements Cloneable {
 	}
 
 	writeToProtocol("Bewegung abgeschlossen");
-	
+
+	// throw new RoboterException("Telemetrieauswertungstest", this);
+
 	// Wenn beendet
 	return true;
     }
@@ -354,9 +356,9 @@ public class Robot implements Cloneable {
 	    simRobot.writeToProtocol("P ist nicht ansteuerbar");
 	}
 
-	//not best solution 
+	// not best solution
 	simRobot.decreaseAmount();
-	
+
 	return simRobot;
     }
 
@@ -551,7 +553,7 @@ public class Robot implements Cloneable {
 
     // addes current telemetrie to telemetrie-list
     void addCurrentTelemetrie() {
-	final int storagePoints = 32;
+	final int storagePoints = 10000;
 	if (telemetrieerfassung) {
 	    if (robotTelemetrie.size() > storagePoints) {
 		robotTelemetrie.remove(0);

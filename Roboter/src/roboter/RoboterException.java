@@ -2,12 +2,16 @@ package roboter;
 
 import java.awt.EventQueue;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
-import gui.Telemetrieauswerter;
+import telemetrie.Telemetrie;
+import telemetrie.Telemetrieauswerter;
 
 import java.time.LocalDateTime;
 
@@ -20,6 +24,9 @@ public class RoboterException extends Exception {
     private Robot ExceptionRobot;
     private LocalDateTime time;
 
+    private static int amount = 0;
+    private int id;
+
     public RoboterException(Robot current) {
 	this("", current);
     }
@@ -29,16 +36,52 @@ public class RoboterException extends Exception {
 	time = LocalDateTime.now();
 	ExceptionRobot = current.clone();
 
+	id = amount;
+	amount++;
+
 	writeToProtocol("************************************************");
 	writeToProtocol("RoboterException für Roboter " + ExceptionRobot.id + " " + ExceptionRobot.DEVICENAME);
 
 	writeToProtocol("Aufgetreten am: " + time);
 
-	writeToProtocol("Beschreibung: " + this.getMessage()); 
+	writeToProtocol("Beschreibung: " + this.getMessage());
 
 	writeToProtocol(getTelemetrieInfos());
 
 	writeToProtocol("************************************************");
+
+	saveTelemetrie();
+    }
+
+    private void saveTelemetrie() {
+	ArrayList<Telemetrie> exceptionTelemetrie = ExceptionRobot.getTelemetrie();
+
+	String dateiname = "." + File.separator + "TelemetrieException" + File.separator + "Telemetrie_" + id + ".tmt";
+
+	ObjectOutputStream oos = null;
+
+	try {
+	    File verzeichnis = new File(dateiname.substring(0, 22));
+
+	    if (!verzeichnis.exists())
+		verzeichnis.mkdir();
+
+	    oos = new ObjectOutputStream(new FileOutputStream(dateiname));
+	    oos.writeObject(exceptionTelemetrie);
+	} catch (IOException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	    System.out.println("Error while writing to the file " + dateiname);
+	} finally {
+	    try {
+		oos.close();
+	    } catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+		System.out.println("Error while closing the file " + dateiname);
+	    }
+	}
+
     }
 
     public String getTelemetrieInfos() {
@@ -59,7 +102,7 @@ public class RoboterException extends Exception {
 	    }
 
 	} catch (NullPointerException e) {
-	    //e.printStackTrace();
+	    // e.printStackTrace();
 	    System.out.println(
 		    "Keine Telemetriedaten auslesbar. (Vermutlich war grundsätzlich keine Verbindung herstellbar)");
 
@@ -68,11 +111,11 @@ public class RoboterException extends Exception {
 
 	return strbf.toString();
     }
-    
+
     public void analyseTelemetrie() {
 	EventQueue.invokeLater(new Runnable() {
 	    public void run() {
-		try {	  
+		try {
 		    Telemetrieauswerter frame = new Telemetrieauswerter(ExceptionRobot.getTelemetrie());
 		    frame.setVisible(true);
 		} catch (Exception e) {

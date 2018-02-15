@@ -11,11 +11,17 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 //time imports
 import java.time.Duration;
 import java.time.Instant;
-
+import java.time.LocalDateTime;
 //util import
 import java.util.ArrayList;
 
@@ -35,6 +41,7 @@ import javax.swing.border.EmptyBorder;
 //eclipse import
 import org.eclipse.wb.swing.FocusTraversalOnArray; //taborder
 
+import Punkt.Punkt;
 //input imports 
 import input.ControlInput;//autocorrection
 import input.ControlInputException;//autocorrection exception
@@ -42,18 +49,26 @@ import input.EmptyInputException;//empty input exception
 
 //robot imports 
 import roboter.RoboterException;//robot exception
-import roboter.Punkt;//point class
+import telemetrie.Telemetrie;
+import telemetrie.Telemetrieauswerter;
 import roboter.Robot;
+import javax.swing.JMenuBar;
+import javax.swing.JMenu;
+import java.awt.Color;
+import javax.swing.JMenuItem;
 
 /**
  * Window application for controlling the robot
  */
 public class Software extends JFrame {
     private static final long serialVersionUID = 1L;
-    private String version = "programm 1.1b";// version
+    private String version = "1.1b";// version
     private Robot myRobot;// robot
     private String device;// devicename (essential for controlling the robot)
-    ArrayList<Punkt> liste = new ArrayList<Punkt>();// list of point for ablauf()
+
+    ArrayList<Punkt> liste;
+    ArrayList<RoboterException> roboterExceptionListe;
+    ArrayList<Telemetrie> aktuelleTelemetrie;
 
     private JPanel contentPane;
     private JScrollPane scrollPane;
@@ -73,6 +88,16 @@ public class Software extends JFrame {
     private JButton btnClose;
     private JButton btnAdd;
     private JButton btnBefehl;
+
+    // temp
+    private JMenu mnHilfe;
+    private JMenuItem mntmNeustart;
+    private JMenuItem mntmSchlieen;
+    private JMenuItem mntmZurcksetzen;
+    private JMenuItem mntmTelemetrieanalyse;
+    private JMenuItem mntmAktuelleTelemetrieSpeichern;
+    private JMenuItem mntmVerbindungstest;
+    private JMenuItem mntmReadme;
 
     /**
      * Launch the application.
@@ -115,7 +140,15 @@ public class Software extends JFrame {
      * Create the frame.
      */
     public Software(String str) {
+	aktuelleTelemetrie = null;
+
 	device = str;// get device name
+
+	liste = new ArrayList<Punkt>();// list of point for ablauf();
+	roboterExceptionListe = new ArrayList<RoboterException>();
+
+	// Titel setzen
+	setTitle("Robot Toolkit " + version);
 
 	// font
 	setFont(new Font("Arial", Font.PLAIN, 12));
@@ -125,7 +158,7 @@ public class Software extends JFrame {
 	    @Override
 	    public void componentResized(ComponentEvent e) {
 		int x = 360;
-		int y = 70;
+		int y = 80;
 
 		scrollPane.setBounds(332, 12, getBounds().width - x, getBounds().height - y);
 	    }
@@ -136,7 +169,188 @@ public class Software extends JFrame {
 	    }
 	});
 	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	setBounds(100, 100, 900, 400);
+	setBounds(100, 100, 900, 428);
+
+	JMenuBar menuBar = new JMenuBar();
+	menuBar.setBorderPainted(false);
+	menuBar.setBackground(SystemColor.controlShadow);
+	setJMenuBar(menuBar);
+
+	JMenu mnDatei = new JMenu("Datei");
+	mnDatei.setForeground(Color.BLACK);
+	mnDatei.setFont(new Font("Arial", Font.PLAIN, 12));
+	mnDatei.setBackground(SystemColor.controlShadow);
+	menuBar.add(mnDatei);
+
+	JMenuItem mntmNewMenuItem = new JMenuItem("Neues Fenster");
+	mntmNewMenuItem.setFont(new Font("Arial", Font.PLAIN, 12));
+	mntmNewMenuItem.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		String[] args = new String[0];
+		main(args);
+	    }
+	});
+	mnDatei.add(mntmNewMenuItem);
+
+	mntmNeustart = new JMenuItem("Neustart");
+	mntmNeustart.setFont(new Font("Arial", Font.PLAIN, 12));
+	mntmNeustart.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		String[] args = new String[0];
+		main(args);
+		setVisible(false);
+	    }
+	});
+	mnDatei.add(mntmNeustart);
+
+	mntmSchlieen = new JMenuItem("Schließen");
+	mntmSchlieen.setFont(new Font("Arial", Font.PLAIN, 12));
+	mntmSchlieen.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		close();
+	    }
+	});
+	mnDatei.add(mntmSchlieen);
+
+	JMenu mnBearbeiten = new JMenu("Bearbeiten");
+	mnBearbeiten.setForeground(Color.BLACK);
+	mnBearbeiten.setFont(new Font("Arial", Font.PLAIN, 12));
+	mnBearbeiten.setBackground(SystemColor.controlShadow);
+	menuBar.add(mnBearbeiten);
+
+	mntmZurcksetzen = new JMenuItem("Zurücksetzen");
+	mntmZurcksetzen.setFont(new Font("Arial", Font.PLAIN, 12));
+	mntmZurcksetzen.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		emptyTextArea();
+	    }
+	});
+	mnBearbeiten.add(mntmZurcksetzen);
+
+	JMenu mnRobot = new JMenu("Robot");
+	mnRobot.setForeground(Color.BLACK);
+	mnRobot.setBackground(SystemColor.controlShadow);
+	mnRobot.setFont(new Font("Arial", Font.PLAIN, 12));
+	menuBar.add(mnRobot);
+
+	mntmTelemetrieanalyse = new JMenuItem("Telemetrieauswerter");
+	mntmTelemetrieanalyse.setFont(new Font("Arial", Font.PLAIN, 12));
+	mntmTelemetrieanalyse.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		EventQueue.invokeLater(new Runnable() {
+		    public void run() {
+			try {
+			    Telemetrieauswerter frame = new Telemetrieauswerter();
+			    frame.setVisible(true);
+			} catch (Exception e) {
+			    e.printStackTrace();
+			}
+		    }
+		});
+	    }
+	});
+
+	mntmVerbindungstest = new JMenuItem("Verbindungstest");
+	mntmVerbindungstest.setFont(new Font("Arial", Font.PLAIN, 12));
+	mntmVerbindungstest.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		connectionTest();
+	    }
+	});
+	mnRobot.add(mntmVerbindungstest);
+	mnRobot.add(mntmTelemetrieanalyse);
+
+	mntmAktuelleTelemetrieSpeichern = new JMenuItem("aktuelle Telemetrie Speichern");
+	mntmAktuelleTelemetrieSpeichern.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent k) {
+		String dateiname = "." + File.separator + "TelemetrieDaten" + File.separator + "Telemetrie"
+			+ LocalDateTime.now().toString().replaceAll(":", "_") + ".tmt";
+
+		File file = new File(dateiname);
+
+		if (!file.exists())
+		    new File("." + File.separator + "TelemetrieDaten").mkdirs();
+
+		if (aktuelleTelemetrie != null) {
+		    ObjectOutputStream oos = null;
+
+		    try {
+			oos = new ObjectOutputStream(new FileOutputStream(dateiname));
+			oos.writeObject(aktuelleTelemetrie);
+		    } catch (IOException e) { // TODO Auto-generated catch block
+			e.printStackTrace();
+		    } finally {
+			try {
+			    oos.close();
+			} catch (IOException e) { // TODO Auto-generated catch block
+			    e.printStackTrace();
+			}
+		    }
+		} else {
+		    JOptionPane.showMessageDialog(null, "Es existieren aktuell keine Telemetriedaten in der Laufzeitumgebung.");
+		}
+
+	    }
+	});
+
+	JMenuItem mntmAktuelleTelemetrieAuswerten = new JMenuItem("aktuelle Telemetrie Auswerten");
+	mntmAktuelleTelemetrieAuswerten.setFont(new Font("Arial", Font.PLAIN, 12));
+	mntmAktuelleTelemetrieAuswerten.setForeground(Color.BLACK);
+	mntmAktuelleTelemetrieAuswerten.setBackground(SystemColor.controlShadow);
+	mntmAktuelleTelemetrieAuswerten.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		if (!(aktuelleTelemetrie == null)) {
+
+		    EventQueue.invokeLater(new Runnable() {
+			public void run() {
+			    try {
+				Telemetrieauswerter frame = new Telemetrieauswerter(aktuelleTelemetrie);
+				frame.setVisible(true);
+			    } catch (Exception e) {
+				e.printStackTrace();
+			    }
+			}
+		    });
+		}else {
+		    JOptionPane.showMessageDialog(null, "Es existieren aktuell keine Telemetriedaten in der Laufzeitumgebung.");
+		}
+	    }
+	});
+	mnRobot.add(mntmAktuelleTelemetrieAuswerten);
+	mntmAktuelleTelemetrieSpeichern.setFont(new Font("Arial", Font.PLAIN, 12));
+	mnRobot.add(mntmAktuelleTelemetrieSpeichern);
+
+	mnHilfe = new JMenu("Hilfe");
+	mnHilfe.setFont(new Font("Arial", Font.PLAIN, 12));
+	mnHilfe.setForeground(Color.BLACK);
+	menuBar.add(mnHilfe);
+
+	mntmReadme = new JMenuItem("Readme");
+	mntmReadme.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		String defaultLocation = "." + File.separator + "Readme.txt";
+		File readMeLocation = new File(defaultLocation);
+
+		if (!readMeLocation.exists() || !readMeLocation.isFile()) {
+		    generateReadme();
+
+		    JOptionPane.showMessageDialog(null,
+			    "Readme konnte nicht gefunden werden. Wurde automatisch generiert!");
+
+		    actionPerformed(e);
+
+		} else
+		    try {
+			java.awt.Desktop.getDesktop().edit(readMeLocation);
+		    } catch (IOException e1) {
+			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, "Konnte Readme finden jedoch nicht öffnen.");
+			e1.printStackTrace();
+		    }
+
+	    }
+	});
+	mnHilfe.add(mntmReadme);
 	contentPane = new JPanel();
 	contentPane.setBackground(SystemColor.controlShadow);// frame background color
 	contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -550,12 +764,10 @@ public class Software extends JFrame {
 	rbTelemetrie.setBounds(198, 238, 124, 23);
 	contentPane.add(rbTelemetrie);
 
-	// Titel setzen
-	setTitle("Roboter Testprogramm " + version + " " + Robot.version);
+	// taborder
 	setFocusTraversalPolicy(new FocusTraversalOnArray(new Component[] { tfX, tfY, tfZ, btnSimulieren, btnAusfuehren,
 		btnAblauf, btnVerbinden, btnLeeren, btnAdd, btnBefehl, tfMID, tfWert, btnAulesen, btnSetzen, btnClose,
 		rdbtnStatusausgaben, rdbtnFehlermeldungen, rdbtnAutokorrektur, rdbtnStandardablauf }));
-	// taborder
 
 	tfX.requestFocus();
 	tfX.selectAll();
@@ -570,8 +782,8 @@ public class Software extends JFrame {
 	liste.add(new Punkt(-200, 100, 40));
 	liste.add(new Punkt(-250, 50, 0));
 	liste.add(new Punkt(170, 0, 40));
-	
-	//enables telemetrie (default setting)
+
+	// enables telemetrie (default setting)
 	Robot.setTelemetrieerfassung(rbTelemetrie.isSelected());
     }
 
@@ -760,12 +972,15 @@ public class Software extends JFrame {
 		JOptionPane.showMessageDialog(null, e.getMessage());
 	} catch (RoboterException e) {
 	    e.printStackTrace();
+
+	    roboterExceptionListe.add(e);
+
 	    if (rdbtnStatusausgaben.isSelected())
 		textArea.append(e.getMessage() + "\n\n");
 
 	    if (rdbtnFehlermeldungen.isSelected())
 		JOptionPane.showMessageDialog(null, e.getMessage());
-	    
+
 	} catch (NumberFormatException e) {
 	    e.printStackTrace();
 	    if (rdbtnStatusausgaben.isSelected())
@@ -949,20 +1164,23 @@ public class Software extends JFrame {
 
 		    textArea.append(myRobot.moveStr + "\n\n");
 
+		    aktuelleTelemetrie = myRobot.getTelemetrie();
+
 		    disconnect();
 		    textArea.append("Bewegung beendet. Sie hat " + dur.toMillis() + " ms gedauert.\n");
 		}
 	    } catch (RoboterException e) {
 		e.printStackTrace();
 
+		roboterExceptionListe.add(e);
+
 		if (statusausgabe)
 		    textArea.append(e.getMessage());
 
 		if (fehlermeldung)
 		    JOptionPane.showMessageDialog(null, e.getMessage());
-		e.printStackTrace();
-		
-		 e.analyseTelemetrie();
+
+		e.analyseTelemetrie();
 	    } catch (NullPointerException e) {
 		e.printStackTrace();
 		System.out.print("Nullpointer Exception");
@@ -985,6 +1203,8 @@ public class Software extends JFrame {
 		JOptionPane.showMessageDialog(null, e.getMessage());
 	} catch (RoboterException e) {
 	    e.printStackTrace();
+
+	    roboterExceptionListe.add(e);
 	    if (statusausgabe)
 		textArea.append(e.getMessage() + "\n\n");
 
@@ -1016,7 +1236,7 @@ public class Software extends JFrame {
      * Performs movements to a list point
      */
     private void ablauf() {
-	final long delay = 1000; // delay between 2 operaton in ms
+	final long delay = 1500; // delay between 2 operaton in ms
 
 	textArea.append("**************************\nAblauf beginnt\n");
 
@@ -1036,13 +1256,17 @@ public class Software extends JFrame {
 			e.printStackTrace();
 		    }
 		} catch (RoboterException e) {
+
+		    roboterExceptionListe.add(e);
 		    // TODO Auto-generated catch block
 		    e.printStackTrace();
-		    e.analyseTelemetrie();
 		}
 	    }
 
 	    Duration dur = Duration.between(begin, Instant.now());
+
+	    aktuelleTelemetrie = myRobot.getTelemetrie();
+
 	    disconnect();
 
 	    textArea.append("Ausführung hat " + dur.toMillis() + " ms gedauert.\n");
@@ -1086,7 +1310,7 @@ public class Software extends JFrame {
 	    break;
 
 	case (1):
-	    
+
 	    break;
 
 	case (2):
@@ -1183,7 +1407,7 @@ public class Software extends JFrame {
     }
 
     /**
-     * adds a point to the list of points 
+     * adds a point to the list of points
      */
     private void hinzufuegen() {
 	int x, y, z;// var. for coordinates
@@ -1356,6 +1580,8 @@ public class Software extends JFrame {
 	    if (rdbtnFehlermeldungen.isSelected())
 		JOptionPane.showMessageDialog(null, e.getMessage());
 	} catch (RoboterException e) {
+
+	    roboterExceptionListe.add(e);
 	    e.printStackTrace();
 	    if (rdbtnStatusausgaben.isSelected())
 		textArea.append(e.getMessage() + "\n\n");
@@ -1535,7 +1761,7 @@ public class Software extends JFrame {
     }
 
     /**
-     * reads one servos position 
+     * reads one servos position
      */
     private void auslesen() {
 	byte id;
@@ -1642,19 +1868,19 @@ public class Software extends JFrame {
     }
 
     /**
-     * closes frame 
+     * closes frame
      */
     private void close() {
 	textArea.append("Beende Programm\n");
-	System.exit(0);
+	this.setVisible(false);
     }
 
     /*
      * within functions
      */
-    
+
     /**
-     * start procedure after creating the frame 
+     * start procedure after creating the frame
      */
     private void startUpProcedure() {
 	int dialogButton = JOptionPane.YES_NO_OPTION;
@@ -1686,13 +1912,15 @@ public class Software extends JFrame {
     }
 
     /**
-     * connects with robot 
-     */ 
+     * connects with robot
+     */
     private boolean connect() {
 	try {
 	    myRobot = new Robot(device);
 	    return true;
 	} catch (RoboterException e) {
+
+	    roboterExceptionListe.add(e);
 	    e.printStackTrace();
 
 	    if (rdbtnStatusausgaben.isSelected())
@@ -1714,13 +1942,15 @@ public class Software extends JFrame {
     }
 
     /**
-     * disconnects from robot 
-     */ 
+     * disconnects from robot
+     */
     private void disconnect() {
 	try {
 	    myRobot.manualDisconnect();
 	    myRobot = null;
 	} catch (RoboterException e) {
+
+	    roboterExceptionListe.add(e);
 	    e.printStackTrace();
 
 	    if (rdbtnStatusausgaben.isSelected())
@@ -1740,8 +1970,8 @@ public class Software extends JFrame {
     }
 
     /**
-     * controlls radiobutton Statusausgabe  
-     */ 
+     * controlls radiobutton Statusausgabe
+     */
     private void rbS(int typ) {
 	if (typ == 0)
 	    rdbtnStatusausgaben.setSelected(!rdbtnStatusausgaben.isSelected());
@@ -1758,8 +1988,8 @@ public class Software extends JFrame {
     }
 
     /**
-     * controlls radiobutton Fehlermeldung  
-     */ 
+     * controlls radiobutton Fehlermeldung
+     */
     private void rbF(int typ) {
 	if (typ == 0)
 	    rdbtnFehlermeldungen.setSelected(!rdbtnFehlermeldungen.isSelected());
@@ -1767,8 +1997,8 @@ public class Software extends JFrame {
     }
 
     /**
-     * controlls radiobutton Autokorrektur   
-     */ 
+     * controlls radiobutton Autokorrektur
+     */
     private void rbA(int typ) {
 	if (typ == 0)
 	    rdbtnAutokorrektur.setSelected(!rdbtnAutokorrektur.isSelected());
@@ -1776,8 +2006,8 @@ public class Software extends JFrame {
     }
 
     /**
-     * controlls radiobutton Ablaufkontrolle   
-     */ 
+     * controlls radiobutton Ablaufkontrolle
+     */
     private void rbAL(int typ) {
 	if (typ == 0)
 	    rdbtnStandardablauf.setSelected(!rdbtnStandardablauf.isSelected());
@@ -1809,13 +2039,38 @@ public class Software extends JFrame {
     }
 
     /**
-     * controlls radiobutton Telemetrie   
-     */ 
+     * controlls radiobutton Telemetrie
+     */
     private void rbT(int typ) {
 	if (typ == 0)
 	    rbTelemetrie.setSelected(!rbTelemetrie.isSelected());
 	textArea.append("Telemetrie Erfassung auf " + rbTelemetrie.isSelected() + " gesetzt\n\n");
 
 	Robot.setTelemetrieerfassung(rbTelemetrie.isSelected());
+    }
+
+    private void generateReadme() {
+	try {
+
+	    String s = "Hey User,\r\n" + "\r\n" + "please read this to make sure everything works.\r\n" + "\r\n"
+		    + "Make sure you have the dxl_x64_c.dll library in your System32 folder or what ever the equivalent linux or mac folder is.\r\n"
+		    + "The libraries can be found hear:\r\n" + "\r\n"
+		    + "https://drive.google.com/drive/folders/16lcrK7qOWh4ED8cf3U_4tEO2zktoKygQ?usp=sharing\r\n"
+		    + "\r\n" + "Or look for it at the official GitHub page frome dynamixel:\r\n" + "\r\n"
+		    + "https://github.com/ROBOTIS-GIT/DynamixelSDK\r\n" + "\r\n"
+		    + "If you need to change the devicename (on Windows this should be something like COM1, COM2, ..., COM5) start the program\r\n"
+		    + "from the command line with the argument you need for the devicename. You can find the devicename under your device manager.\r\n"
+		    + "If the devicename is \"COM3\" you dont need to change it because this is the default devicename.\r\n"
+		    + "It should look something like this:\r\n" + "\r\n" + "C:\\Your\\current\\path>Robot.jar COM2\r\n"
+		    + "\r\n"
+		    + "Also make sure you got the latest Java-version installed because this is a Java program! \r\n"
+		    + "\r\n" + "Cheers!";
+
+	    PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("Readme.txt", true)));
+	    out.println(s);
+	    out.close();
+	} catch (IOException e) {
+	    // exception handling left as an exercise for the reader
+	}
     }
 }

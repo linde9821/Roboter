@@ -18,8 +18,11 @@
 *.tar.gz
 *.rar
 
-#protocol
+#protocol and telemetriedata
 Protokoll.txt
+TelemetrieDaten
+TelemetrieException
+#.tmt
 
 #javadoc
 doc
