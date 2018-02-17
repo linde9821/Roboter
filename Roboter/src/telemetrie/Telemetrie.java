@@ -9,7 +9,7 @@ import java.time.Duration;
 import java.time.Instant;
 
 //testing needed 
-public class Telemetrie implements Serializable{
+public class Telemetrie implements Serializable {
     /**
      * 
      */
@@ -23,6 +23,7 @@ public class Telemetrie implements Serializable{
     boolean telemetrieerfassung;
     boolean error;
     boolean empty;
+    boolean connection;
 
     short speedM1;
     short speedM2;
@@ -39,6 +40,14 @@ public class Telemetrie implements Serializable{
     short voltageM1;
     short voltageM2;
     short voltageM3;
+
+    public boolean isError() {
+	return error;
+    }
+
+    public void setError(boolean error) {
+	this.error = error;
+    }
 
     public Telemetrie() {
 	this(null);
@@ -78,7 +87,7 @@ public class Telemetrie implements Serializable{
 
 		dur = Duration.between(temp, Instant.now());
 
-		error = false;
+		error = checkForError();
 		empty = false;
 	    } else {
 		gradM1 = -1;
@@ -105,6 +114,47 @@ public class Telemetrie implements Serializable{
 	} catch (Exception e) {
 	    error = true;
 	}
+    }
+
+    private boolean checkForError() {
+	if (gradM1 < Robot.min[0] || gradM1 > Robot.max[0])
+	    return true;
+
+	if (gradM2 < Robot.min[1] || gradM2 > Robot.max[1])
+	    return true;
+
+	if (gradM3 < Robot.min[2] || gradM1 > Robot.max[2])
+	    return true;
+
+	if (speedM1 > Robot.speedM1)
+	    return true;
+
+	if (speedM2 > Robot.speedM2)
+	    return true;
+
+	if (speedM3 > Robot.speedM3)
+	    return true;
+
+	if (tempM1 > Robot.tempratureMax)
+	    return true;
+
+	if (tempM2 > Robot.tempratureMax)
+	    return true;
+
+	if (tempM3 > Robot.tempratureMax)
+	    return true;
+
+	if (voltageM1 > Robot.maxVoltage)
+	    return true;
+
+	if (voltageM2 > Robot.maxVoltage)
+	    return true;
+
+	if (voltageM3 > Robot.maxVoltage)
+	    return true;
+
+	return false;
+
     }
 
     public String getInfo() {

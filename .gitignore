@@ -23,9 +23,13 @@ Protokoll.txt
 TelemetrieDaten
 TelemetrieException
 #.tmt
+standardTelemetrieDatensatz.tmt
 
 #javadoc
 doc
+
+#punktliste
+punktListe.pkt
 
 #Logo class
 Logo.java 
