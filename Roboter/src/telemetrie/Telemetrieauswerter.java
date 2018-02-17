@@ -30,6 +30,12 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.eclipse.wb.swing.FocusTraversalOnArray;
 
+import jxl.Workbook;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
+import jxl.write.biff.RowsExceededException;
+
 public class Telemetrieauswerter extends JFrame {
 
     /**
@@ -44,6 +50,7 @@ public class Telemetrieauswerter extends JFrame {
     private JButton btnDatensatzUntersuchen;
     private JButton btnSchlieen;
     private ArrayList<Telemetrie> telemetrieListe;
+    private String dateiname;
 
     /**
      * Launch the application.
@@ -159,9 +166,59 @@ public class Telemetrieauswerter extends JFrame {
 	btnDateiSpeichern.setBounds(147, 11, 115, 23);
 	contentPane.add(btnDateiSpeichern);
 
+	JButton btnSpeichernAls = new JButton("zu .xlsx");
+	btnSpeichernAls.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		String filename = dateiname.toString().replaceAll(".tmt", "") + ".xls";
+
+		try {
+		    WritableWorkbook workbook = Workbook.createWorkbook(new File(filename));
+		    WritableSheet sheet = workbook.createSheet("Sheet1", 0);
+
+		    sheet.addCell(new jxl.write.Label(0, 0, "Temperatur M1"));
+		    sheet.addCell(new jxl.write.Label(3, 0, "Voltage M1"));
+		    for (Telemetrie datensatz : telemetrieListe) {
+			sheet.addCell(new jxl.write.Number(0, datensatz.id, datensatz.tempM1));
+			sheet.addCell(new jxl.write.Number(3, datensatz.id, datensatz.voltageM1));
+		    }
+
+		    sheet.addCell(new jxl.write.Label(1, 0, "Temperatur M2"));
+		    sheet.addCell(new jxl.write.Label(4, 0, "Voltage M2"));
+		    for (Telemetrie datensatz : telemetrieListe) {
+			sheet.addCell(new jxl.write.Number(1, datensatz.id, datensatz.tempM2));
+			sheet.addCell(new jxl.write.Number(4, datensatz.id, datensatz.voltageM2));
+		    }
+
+		    sheet.addCell(new jxl.write.Label(2, 0, "Temperatur M2"));
+		    sheet.addCell(new jxl.write.Label(5, 0, "Voltage M3"));
+		    for (Telemetrie datensatz : telemetrieListe) {
+			sheet.addCell(new jxl.write.Number(2, datensatz.id, datensatz.tempM3));
+			sheet.addCell(new jxl.write.Number(5, datensatz.id, datensatz.voltageM3));
+		    }
+
+		    workbook.write();
+		    workbook.close();
+		} catch (IOException e1) {
+		    // TODO Auto-generated catch block
+		    e1.printStackTrace();
+		} catch (RowsExceededException e1) {
+		    // TODO Auto-generated catch block
+		    e1.printStackTrace();
+		} catch (WriteException e1) {
+		    // TODO Auto-generated catch block
+		    e1.printStackTrace();
+		}
+
+	    }
+	});
+	btnSpeichernAls.setBounds(147, 45, 115, 23);
+	contentPane.add(btnSpeichernAls);
+
 	this.requestFocus();
 
-	if (telemetrieParameter != null) {
+	if (telemetrieParameter != null)
+
+	{
 	    dateiLaden(telemetrieParameter);
 	}
     }
@@ -225,7 +282,7 @@ public class Telemetrieauswerter extends JFrame {
 	    fc.setCurrentDirectory(new File("."));
 
 	    if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-		String dateiname = fc.getSelectedFile().getAbsolutePath();
+		dateiname = fc.getSelectedFile().getAbsolutePath();
 		ObjectInputStream ois = null;
 
 		try {

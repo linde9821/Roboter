@@ -49,6 +49,7 @@
 	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/maven-ant-tasks-2.1.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/DynamixelSDK-master/java/dynamixel_functions_java/x64"/>
 	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-4.5.0.jar"/>
+	<classpathentry kind="lib" path="jxl.jar"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/libary"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

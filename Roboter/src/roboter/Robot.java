@@ -26,11 +26,11 @@ public class Robot implements Cloneable {
     public static final double MAX_LENGTH = B2_LENGTH + B3_LENGTH;// Maximale länge des Greifarms
     public static final double MIN_LENGTH = Math.sqrt((B2_LENGTH * B2_LENGTH) + (B3_LENGTH * B3_LENGTH)
 	    - 2 * B2_LENGTH * B3_LENGTH * Math.cos((Math.PI / 180 * MIN_ANGEL_B2_B3)));// Minimale länge des Greifarms
-    
+
     public final static short speedM1 = 80;
     public final static short speedM2 = 40;
     public final static short speedM3 = 40;
-    public final static short tempratureMax = 50;// in °C
+    public final static short tempratureMax = 60;// in °C
     public final static short[] min = new short[] { 0, 150, 10 };
     public final static short[] max = new short[] { 1023, 517, 517 };
     public final static short maxVoltage = 15000;
@@ -40,7 +40,6 @@ public class Robot implements Cloneable {
 
     private static boolean telemetrieerfassung;
     private ArrayList<Telemetrie> robotTelemetrie;
-
 
     // goal values for the angels
     private double grad1, grad2, grad3;
@@ -58,7 +57,7 @@ public class Robot implements Cloneable {
     short ADDR_Moving_Speed_Low = 32;
 
     // [in Source Code]-Settings
-    private final boolean allowTelemetrieDuringMovment = true;
+    private final boolean allowTelemetrieDuringMovment = false;
 
     // Protocol version
     int PROTOCOL_VERSION = 1; // See which protocol version is used in the Dynamixel
@@ -232,7 +231,7 @@ public class Robot implements Cloneable {
     public void writeGoalPosition(byte id, double goal) throws RoboterException {
 	addCurrentTelemetrie();
 
-	//Instant beg = Instant.now();
+	// Instant beg = Instant.now();
 
 	if (goal < min[id] || goal > max[id]) {
 	    throw new RoboterException("Nicht nutzbarer Wert für Motor " + id + " mit " + goal, this);
@@ -258,9 +257,10 @@ public class Robot implements Cloneable {
 		if (allowTelemetrieDuringMovment)
 		    addCurrentTelemetrie();
 
-		//testen 
-		//if (Duration.between(beg, Instant.now()).compareTo(Duration.ofMillis(0)) > 1500)
-		  //  throw new RoboterException("Zeitablauf", this);
+		// testen
+		// if (Duration.between(beg, Instant.now()).compareTo(Duration.ofMillis(0)) >
+		// 1500)
+		// throw new RoboterException("Zeitablauf", this);
 
 	    } while (Math.abs(dxl_present_position - (short) goal) >= ADDR_MX_PRESENT_POSITION);
 
@@ -278,10 +278,7 @@ public class Robot implements Cloneable {
 	writeToProtocol("Bewegung zu P(" + Zielpunkt.getX() + "|" + Zielpunkt.getY() + "|" + Zielpunkt.getZ() + ")");
 
 	boolean ansteuerbar = calc(Zielpunkt);
-	
-	throw new RoboterException(" ddsd" , this);
 
-	/*
 	if (ansteuerbar) {
 	    grad2 = graToUni(330) - grad2;
 	    grad3 -= graToUni(30);
@@ -294,14 +291,12 @@ public class Robot implements Cloneable {
 	    writeGoalPosition(DXL_ID[0], grad1);
 	}
 
-
 	writeToProtocol("Bewegung abgeschlossen");
 
 	// throw new RoboterException("Telemetrieauswertungstest", this);
 
 	// Wenn beendet
 	return true;
-	*/
     }
 
     // simulates values for servors and return an object with the calulated values
@@ -554,7 +549,7 @@ public class Robot implements Cloneable {
 
     // addes current telemetrie to telemetrie-list
     void addCurrentTelemetrie() {
-	final int storagePoints = 10000;
+	final int storagePoints = 100;
 	if (telemetrieerfassung) {
 	    if (robotTelemetrie.size() > storagePoints) {
 		robotTelemetrie.remove(0);
@@ -583,5 +578,21 @@ public class Robot implements Cloneable {
 	} catch (IOException e) {
 	    // exception handling left as an exercise for the reader
 	}
+    }
+
+    public boolean hasPower() {
+	short befor = getSpeed((byte) 2);
+
+	setSpeed((byte) 2, (short) (befor + (short) 20));
+
+	short after = getSpeed((byte) 2);
+
+	if (after == befor)
+	    return false;
+	else {
+	    setSpeed((byte) 2, (short) (befor));
+	    return false;
+	}
+
     }
 }

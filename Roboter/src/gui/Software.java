@@ -11,9 +11,11 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -25,6 +27,7 @@ import java.time.LocalDateTime;
 //util import
 import java.util.ArrayList;
 
+import javax.swing.DefaultListModel;
 //swing import 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -41,6 +44,7 @@ import javax.swing.border.EmptyBorder;
 //eclipse import
 import org.eclipse.wb.swing.FocusTraversalOnArray; //taborder
 
+import Punkt.Ablaufkonfigurator;
 import Punkt.Punkt;
 //input imports 
 import input.ControlInput;//autocorrection
@@ -81,12 +85,10 @@ public class Software extends JFrame {
     private JRadioButton rdbtnStatusausgaben;
     private JRadioButton rdbtnFehlermeldungen;
     private JRadioButton rdbtnAutokorrektur;
-    private JRadioButton rdbtnStandardablauf;
     private JRadioButton rbTelemetrie;
     private JButton btnAusfuehren;
     private JButton btnLeeren;
     private JButton btnClose;
-    private JButton btnAdd;
     private JButton btnBefehl;
 
     // temp
@@ -98,6 +100,7 @@ public class Software extends JFrame {
     private JMenuItem mntmAktuelleTelemetrieSpeichern;
     private JMenuItem mntmVerbindungstest;
     private JMenuItem mntmReadme;
+    private JButton btnZeigePunkte;
 
     /**
      * Launch the application.
@@ -145,17 +148,10 @@ public class Software extends JFrame {
 	device = str;// get device name
 
 	liste = new ArrayList<Punkt>();// list of point for ablauf();
+
+	getPunktListe();
+
 	roboterExceptionListe = new ArrayList<RoboterException>();
-
-	File verzeichnis = new File("." + File.separator + "TelemetrieException");
-
-	if (!verzeichnis.exists())
-	    verzeichnis.mkdir();
-
-	verzeichnis = new File("." + File.separator + "TelemetrieDaten");
-
-	if (!verzeichnis.exists())
-	    verzeichnis.mkdir();
 
 	// Titel setzen
 	setTitle("Robot Toolkit " + version);
@@ -235,6 +231,24 @@ public class Software extends JFrame {
 		emptyTextArea();
 	    }
 	});
+
+	JMenuItem mntmAblaufkonfigurator = new JMenuItem("Ablaufkonfigurator");
+	mntmAblaufkonfigurator.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		EventQueue.invokeLater(new Runnable() {
+		    public void run() {
+			try {
+			    Ablaufkonfigurator frame = new Ablaufkonfigurator();
+			    frame.setVisible(true);
+			} catch (Exception e) {
+			    e.printStackTrace();
+			}
+		    }
+		});
+	    }
+	});
+	mntmAblaufkonfigurator.setFont(new Font("Arial", Font.PLAIN, 12));
+	mnBearbeiten.add(mntmAblaufkonfigurator);
 	mnBearbeiten.add(mntmZurcksetzen);
 
 	JMenu mnRobot = new JMenu("Robot");
@@ -636,44 +650,24 @@ public class Software extends JFrame {
 	btnBefehl.setBounds(66, 214, 119, 23);
 	contentPane.add(btnBefehl);
 
-	// button hinzufügen
-	btnAdd = new JButton("Hinzufügen");
-	btnAdd.addKeyListener(new KeyAdapter() {
-	    @Override
-	    public void keyPressed(KeyEvent e) {
-		if (e.getKeyCode() == KeyEvent.VK_ENTER)
-		    hinzufuegen();
-	    }
-	});
-	btnAdd.addActionListener(new ActionListener() {
-	    public void actionPerformed(ActionEvent e) {
-		if (e.getModifiers() == ActionEvent.MOUSE_EVENT_MASK)
-		    hinzufuegen();
-	    }
-	});
-	btnAdd.setFont(new Font("Arial", Font.PLAIN, 12));
-	btnAdd.setBackground(SystemColor.controlShadow);
-	btnAdd.setBounds(203, 180, 119, 23);
-	contentPane.add(btnAdd);
-
-	JButton btnAulesen = new JButton("Auslesen");
-	btnAulesen.setBackground(SystemColor.controlShadow);
-	btnAulesen.setFont(new Font("Arial", Font.PLAIN, 12));
-	btnAulesen.addKeyListener(new KeyAdapter() {
+	JButton btnAuslesen = new JButton("Auslesen");
+	btnAuslesen.setBackground(SystemColor.controlShadow);
+	btnAuslesen.setFont(new Font("Arial", Font.PLAIN, 12));
+	btnAuslesen.addKeyListener(new KeyAdapter() {
 	    @Override
 	    public void keyPressed(KeyEvent e) {
 		if (e.getKeyCode() == KeyEvent.VK_ENTER)
 		    auslesen();
 	    }
 	});
-	btnAulesen.addActionListener(new ActionListener() {
+	btnAuslesen.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent e) {
 		if (e.getModifiers() == ActionEvent.MOUSE_EVENT_MASK)
 		    auslesen();
 	    }
 	});
-	btnAulesen.setBounds(124, 268, 119, 23);
-	contentPane.add(btnAulesen);
+	btnAuslesen.setBounds(124, 268, 119, 23);
+	contentPane.add(btnAuslesen);
 
 	// radioButton Statusausgabe (dis-/enabels textArea)
 	rdbtnStatusausgaben = new JRadioButton("Statusausgaben");
@@ -736,26 +730,6 @@ public class Software extends JFrame {
 	rdbtnAutokorrektur.setBounds(202, 73, 124, 23);
 	contentPane.add(rdbtnAutokorrektur);
 
-	rdbtnStandardablauf = new JRadioButton("Standard-Ablauf");
-	rdbtnStandardablauf.addKeyListener(new KeyAdapter() {
-	    @Override
-	    public void keyPressed(KeyEvent e) {
-		if (e.getKeyCode() == KeyEvent.VK_ENTER)
-		    rbAL(0);
-	    }
-	});
-	rdbtnStandardablauf.addActionListener(new ActionListener() {
-	    public void actionPerformed(ActionEvent e) {
-		if (e.getModifiers() == ActionEvent.MOUSE_EVENT_MASK)
-		    rbAL(1);
-	    }
-	});
-	rdbtnStandardablauf.setSelected(true);
-	rdbtnStandardablauf.setFont(new Font("Arial", Font.PLAIN, 12));
-	rdbtnStandardablauf.setBackground(SystemColor.controlShadow);
-	rdbtnStandardablauf.setBounds(198, 211, 124, 23);
-	contentPane.add(rdbtnStandardablauf);
-
 	rbTelemetrie = new JRadioButton("Telemetrie ");
 	rbTelemetrie.addKeyListener(new KeyAdapter() {
 	    @Override
@@ -773,13 +747,40 @@ public class Software extends JFrame {
 	rbTelemetrie.setSelected(true);
 	rbTelemetrie.setFont(new Font("Arial", Font.PLAIN, 12));
 	rbTelemetrie.setBackground(SystemColor.controlShadow);
-	rbTelemetrie.setBounds(198, 238, 124, 23);
+	rbTelemetrie.setBounds(202, 214, 124, 23);
 	contentPane.add(rbTelemetrie);
 
-	// taborder
+	btnZeigePunkte = new JButton("zeige Punkte");
+	btnZeigePunkte.addKeyListener(new KeyAdapter() {
+	    @Override
+	    public void keyPressed(KeyEvent e) {
+		if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+		    getPunktListe();
+		    for (Punkt p : liste) {
+
+			textArea.append(p.getX() + " " + p.getY() + " " + p.getZ() + "\n");
+		    }
+		}
+	    }
+	});
+	btnZeigePunkte.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		if (e.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
+		    getPunktListe();
+		    for (Punkt p : liste) {
+
+			textArea.append(p.getX() + " " + p.getY() + " " + p.getZ() + "\n");
+		    }
+		}
+	    }
+	});
+	btnZeigePunkte.setFont(new Font("Arial", Font.PLAIN, 12));
+	btnZeigePunkte.setBackground(SystemColor.controlShadow);
+	btnZeigePunkte.setBounds(203, 181, 119, 23);
+	contentPane.add(btnZeigePunkte);
 	setFocusTraversalPolicy(new FocusTraversalOnArray(new Component[] { tfX, tfY, tfZ, btnSimulieren, btnAusfuehren,
-		btnAblauf, btnVerbinden, btnLeeren, btnAdd, btnBefehl, tfMID, tfWert, btnAulesen, btnSetzen, btnClose,
-		rdbtnStatusausgaben, rdbtnFehlermeldungen, rdbtnAutokorrektur, rdbtnStandardablauf }));
+		btnAblauf, btnVerbinden, btnLeeren, btnBefehl, tfMID, tfWert, btnAuslesen, btnSetzen, btnClose,
+		rdbtnStatusausgaben, rdbtnFehlermeldungen, rdbtnAutokorrektur }));
 
 	tfX.requestFocus();
 	tfX.selectAll();
@@ -787,12 +788,39 @@ public class Software extends JFrame {
 	textArea.append("Initialisiere Programm\n");
 	textArea.append(version + "\n" + Robot.version + "\ndevicename: " + this.device + " \n\n");
 
-	// sets up default point for ablauf()
-	liste.add(new Punkt(250, 50, 180));
-	liste.add(new Punkt(200, 50, 40));
-
 	// enables telemetrie (default setting)
 	Robot.setTelemetrieerfassung(rbTelemetrie.isSelected());
+
+	File verzeichnis = new File("." + File.separator + "TelemetrieException");
+
+	if (!verzeichnis.exists())
+	    verzeichnis.mkdir();
+
+	verzeichnis = new File("." + File.separator + "TelemetrieDaten");
+
+	if (!verzeichnis.exists())
+	    verzeichnis.mkdir();
+
+	verzeichnis = new File("C:\\Windows\\System32\\dxl_x64_c.dll");
+
+	if (!verzeichnis.exists()) {
+	    JOptionPane.showMessageDialog(null,
+		    "Die Bibilothek dxl_x64_c.dll ist nicht vorhanden. Der Roboter"
+		    + " ist daher nicht ansteuerbar und einige Funktionen sind deaktiviert, "
+		    + "die anderen Tools sollten aber weiterhin funktionieren.\nIm Readme wird"
+		    + " beschrieben wie das Problem gelöst werden kann. (Das Readme kann, falls"
+		    + " nicht auffindbar, mit dem Programm generiert werden)");
+
+	    btnSimulieren.setEnabled(false);
+	    btnAusfuehren.setEnabled(false);
+	    btnAblauf.setEnabled(false);
+	    btnVerbinden.setEnabled(false);
+	    mntmVerbindungstest.setEnabled(false);
+	    btnAuslesen.setEnabled(false);
+	    btnSetzen.setEnabled(false);
+	    rbTelemetrie.setEnabled(false);
+	}
+
     }
 
     /**
@@ -1188,7 +1216,7 @@ public class Software extends JFrame {
 		if (fehlermeldung)
 		    JOptionPane.showMessageDialog(null, e.getMessage());
 
-		//e.analyseTelemetrie();
+		// e.analyseTelemetrie();
 	    } catch (NullPointerException e) {
 		e.printStackTrace();
 		System.out.print("Nullpointer Exception");
@@ -1245,13 +1273,14 @@ public class Software extends JFrame {
 	    }
 	}
 	System.out.println("dsabhkdashiludhasklhg");
-	
+
     }
 
     /**
      * Performs movements to a list point
      */
     private void ablauf() {
+	getPunktListe();
 	final long delay = 200; // delay between 2 operaton in ms
 
 	textArea.append("**************************\nAblauf beginnt\n");
@@ -1262,7 +1291,7 @@ public class Software extends JFrame {
 	    for (int i = 0; i < liste.size(); i++) {
 		try {
 		    System.out.println("I:" + i);
-		    
+
 		    myRobot.moveto(liste.get(i));
 
 		    System.out.println(myRobot.getTemperature((byte) 0));
@@ -1281,12 +1310,12 @@ public class Software extends JFrame {
 		    roboterExceptionListe.add(e);
 
 		    i = liste.size();
-		    
+
 		    // TODO Auto-generated catch block
 		    e.printStackTrace();
 
 		    System.out.println("Abbr");
-		    
+
 		    // e.analyseTelemetrie();
 		}
 	    }
@@ -1296,14 +1325,14 @@ public class Software extends JFrame {
 	    aktuelleTelemetrie = myRobot.getTelemetrie();
 
 	    System.out.println("dsddsdssssss");
-	    
+
 	    disconnect();
 
 	    textArea.append("Ausführung hat " + dur.toMillis() + " ms gedauert.\n");
 	}
 
 	textArea.append("Ablauf beendet\n**************************\n");
-	
+
 	System.out.println("Abbruch");
     }
 
@@ -1436,210 +1465,6 @@ public class Software extends JFrame {
 	tfX.setText("");
 	tfY.setText("");
 	tfZ.setText("");
-    }
-
-    /**
-     * adds a point to the list of points
-     */
-    private void hinzufuegen() {
-	int x, y, z;// var. for coordinates
-
-	try {
-	    // checks for empty Input
-	    if (tfX.getText().equals("")) {
-		tfX.requestFocus();
-		throw new EmptyInputException("Keine Wert für die X-Koordinate");
-	    }
-
-	    if (tfY.getText().equals("")) {
-		tfY.requestFocus();
-		throw new EmptyInputException("Keine Wert fr die Y-Koordinate");
-	    }
-
-	    if (tfZ.getText().equals("")) {
-		tfZ.requestFocus();
-		throw new EmptyInputException("Keine Wert für die Z-Koordinate");
-
-	    }
-
-	    // checks if autocorrection is enabeld
-	    if (rdbtnAutokorrektur.isSelected()) {
-		// sets up ControlInput
-		ControlInput.setCanBeNegative(true);
-		ControlInput.setCanBeAFloat(false);
-		ControlInput.setUseExceptions(false);
-
-		// creats ControlInput obj.
-		ControlInput ctrx = ControlInput.inspect(tfX.getText());
-		ControlInput ctry = ControlInput.inspect(tfY.getText());
-		ControlInput ctrz = ControlInput.inspect(tfZ.getText());
-
-		boolean usabel = true;// var. for controlling autocorrect (might be redundant)
-
-		// if not usabeld/not correctabel
-		if (!ctrz.isUsabel) {
-		    usabel = false;
-		    tfZ.requestFocus();
-		    tfZ.selectAll();
-		}
-
-		if (!ctry.isUsabel) {
-		    usabel = false;
-		    tfY.requestFocus();
-		    tfY.selectAll();
-		}
-
-		if (!ctrx.isUsabel) {
-		    usabel = false;
-		    tfX.requestFocus();
-		    tfX.selectAll();
-		}
-
-		// if corret but corrected
-		if (ctrz.wasCorrected) {
-		    tfZ.setText(ctrz.getSuggestedInput());
-		}
-
-		if (ctry.wasCorrected) {
-		    tfY.setText(ctry.getSuggestedInput());
-		}
-
-		if (ctrx.wasCorrected) {
-		    tfX.setText(ctrx.getSuggestedInput());
-		}
-
-		// some outputs in textArea
-		if (rdbtnStatusausgaben.isSelected()) {
-		    if (ctrx.wasCorrected) {
-			textArea.append("X-Koordinate wurde Korrigiert:\n");
-			textArea.append(ctrx.output() + "\n");
-		    }
-
-		    if (ctry.wasCorrected) {
-			textArea.append("Y-Koordinate wurde Korrigiert:\n");
-			textArea.append(ctry.output() + "\n");
-		    }
-
-		    if (ctrz.wasCorrected) {
-			textArea.append("Z-Koordinate wurde Korrigiert:\n");
-			textArea.append(ctrz.output() + "\n");
-		    }
-
-		    if (ctrx.isUsabel)
-			textArea.append("X-Koordinate ist nutzbar\n");
-		    else {
-			textArea.append("X-Koordinate ist nicht nutzbar\n");
-		    }
-
-		    if (ctry.isUsabel)
-			textArea.append("Y-Koordinate ist nutzbar\n");
-		    else {
-			textArea.append("Y-Koordinate ist nicht nutzbar\n");
-		    }
-
-		    if (ctrz.isUsabel)
-			textArea.append("Z-Koordinate ist nutzbar\n\n");
-		    else {
-			textArea.append("Z-Koordinate ist nicht nutzbar\n\n");
-		    }
-		}
-
-		// some error output via JOptionPane if necessery
-		if (rdbtnFehlermeldungen.isSelected()) {
-		    if (!ctrx.isUsabel)
-			JOptionPane.showMessageDialog(null, "X-Koordinate ist nicht nutzbar");
-
-		    if (!ctry.isUsabel)
-			JOptionPane.showMessageDialog(null, "Y-Koordinate ist nicht nutzbar");
-
-		    if (!ctrz.isUsabel)
-			JOptionPane.showMessageDialog(null, "Z-Koordinate ist nicht nutzbar");
-		}
-
-		// if usabel: reading the values
-		if (usabel) {
-		    x = Integer.parseInt(ctrx.getSuggestedInput());
-		    y = Integer.parseInt(ctry.getSuggestedInput());
-		    z = Integer.parseInt(ctrz.getSuggestedInput());
-		} else // if not usabel: throws ControlInputException
-		    throw new ControlInputException("Keine Autokorrektur möglich");
-	    } else {// reading the values without autocorrection
-		x = Integer.parseInt(tfX.getText());
-		y = Integer.parseInt(tfY.getText());
-		z = Integer.parseInt(tfZ.getText());
-	    }
-
-	    Punkt p = new Punkt(x, y, z);// creat usabel point for the robot
-
-	    if (!Robot.ansteuerbarkeit(p))
-		throw new RoboterException("Der Punkt ist nicht ansteuerbar", myRobot);
-
-	    liste.add(p);
-
-	    if (rdbtnStatusausgaben.isSelected()) {
-		textArea.append("Neuer Punkt P(" + x + "|" + y + "|" + z + ") zur Liste hinzugefügt\n\n");
-		textArea.append("Liste:\n");
-
-		for (int i = 0; i < liste.size(); i++) {
-		    int a, b, c;
-
-		    a = (int) liste.get(i).getX();
-		    b = (int) liste.get(i).getY();
-		    c = (int) liste.get(i).getZ();
-
-		    textArea.append("Punkte " + (i + 1) + ": " + "P(" + a + "|" + b + "|" + c + ")" + "\n");
-		}
-	    }
-
-	    textArea.append("\n");
-
-	    tfX.requestFocus();
-	    tfX.selectAll();
-	}
-	// error handling
-	catch (EmptyInputException e) {
-	    e.printStackTrace();
-	    if (rdbtnStatusausgaben.isSelected())
-		textArea.append(e.getMessage() + "\n\n");
-
-	    if (rdbtnFehlermeldungen.isSelected())
-		JOptionPane.showMessageDialog(null, e.getMessage());
-	} catch (ControlInputException e) {
-	    e.printStackTrace();
-	    if (rdbtnStatusausgaben.isSelected())
-		textArea.append(e.getMessage() + "\n\n");
-
-	    if (rdbtnFehlermeldungen.isSelected())
-		JOptionPane.showMessageDialog(null, e.getMessage());
-	} catch (RoboterException e) {
-
-	    roboterExceptionListe.add(e);
-	    e.printStackTrace();
-	    if (rdbtnStatusausgaben.isSelected())
-		textArea.append(e.getMessage() + "\n\n");
-
-	    if (rdbtnFehlermeldungen.isSelected())
-		JOptionPane.showMessageDialog(null, e.getMessage());
-
-	    // System.out.println(e.getInfosR();
-
-	} catch (NumberFormatException e) {
-	    e.printStackTrace();
-	    if (rdbtnStatusausgaben.isSelected())
-		textArea.append("Bitte überprüfen Sie die Eingegeben Koordinatenwerte\n\n");
-
-	    if (rdbtnFehlermeldungen.isSelected())
-		JOptionPane.showMessageDialog(null, "Bitte überprüfen Sie die Eingegeben Koordinatenwerte");
-
-	} catch (Exception e) {
-	    e.printStackTrace();
-	    if (rdbtnStatusausgaben.isSelected())
-		textArea.append("Unbekannter Fehler aufgetreten\n\n");
-
-	    if (rdbtnFehlermeldungen.isSelected())
-		JOptionPane.showMessageDialog(null, "Unbekannter Fehler aufgetreten");
-
-	}
     }
 
     /**
@@ -2040,39 +1865,6 @@ public class Software extends JFrame {
     }
 
     /**
-     * controlls radiobutton Ablaufkontrolle
-     */
-    private void rbAL(int typ) {
-	if (typ == 0)
-	    rdbtnStandardablauf.setSelected(!rdbtnStandardablauf.isSelected());
-
-	textArea.append("Standard-Ablauf auf " + rdbtnStandardablauf.isSelected() + " gesetzt\n\n");
-
-	if (rdbtnStandardablauf.isSelected()) {
-	    liste.clear();
-	    // sets up point for ablauf()
-	    liste.add(new Punkt(170, 0, 40));
-	    liste.add(new Punkt(200, 100, 50));
-	    liste.add(new Punkt(100, 200, -50));
-	    liste.add(new Punkt(-200, 100, 40));
-	    liste.add(new Punkt(-250, 50, 0));
-	    liste.add(new Punkt(170, 0, 40));
-	} else {
-	    liste.clear();
-	}
-
-	for (int i = 0; i < liste.size(); i++) {
-	    int a, b, c;
-
-	    a = (int) liste.get(i).getX();
-	    b = (int) liste.get(i).getY();
-	    c = (int) liste.get(i).getZ();
-
-	    textArea.append("Punkte " + (i + 1) + ": " + "P(" + a + "|" + b + "|" + c + ")" + "\n");
-	}
-    }
-
-    /**
      * controlls radiobutton Telemetrie
      */
     private void rbT(int typ) {
@@ -2108,6 +1900,44 @@ public class Software extends JFrame {
 	    out.close();
 	} catch (IOException e) {
 	    // exception handling left as an exercise for the reader
+	}
+    }
+
+    private void getPunktListe() {
+	String dateiname = "." + File.separator + "punktListe.pkt";
+
+	File datei = new File(dateiname);
+	BufferedReader in = null;
+
+	if (!datei.exists()) {
+	    try {
+		datei.createNewFile();
+	    } catch (IOException ex) {
+		ex.printStackTrace();
+	    }
+	} else {
+	    String punktzeile;
+	    try {
+		DefaultListModel<String> punktListe = new DefaultListModel<String>();
+		liste = new ArrayList<Punkt>();
+		in = new BufferedReader(new FileReader(dateiname));
+		while ((punktzeile = in.readLine()) != null) {
+		    punktListe.addElement(punktzeile);
+		}
+
+		for (int i = 0; i < punktListe.size(); i++) {
+		    StringBuffer strbf = new StringBuffer(punktListe.elementAt(i));
+		    short x = (short) Double.parseDouble(strbf.substring(0, strbf.indexOf(" ")));
+		    strbf = new StringBuffer(strbf.substring(0, (strbf.indexOf(" ") + 1)));
+		    short y = (short) Double.parseDouble(strbf.substring(0, strbf.indexOf(" ")));
+		    strbf = new StringBuffer(strbf.substring(0, (strbf.indexOf(" ") + 1)));
+		    short z = (short) Double.parseDouble(strbf.substring(0, strbf.indexOf(" ")));
+
+		    liste.add(new Punkt(x, y, z));
+		}
+	    } catch (IOException ex) {
+		ex.printStackTrace();
+	    }
 	}
     }
 }

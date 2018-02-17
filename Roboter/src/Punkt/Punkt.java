@@ -51,6 +51,10 @@ public class Punkt {
 	this.y += y;
 	this.z += z;
     }
+    
+    public String toString() {
+	return x + " " + y + " " + z;
+    }
 
     public static double betrag(Punkt P, Punkt R) {
 	double a = (P.x - R.x) * (P.x - R.x);
