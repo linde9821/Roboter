@@ -1,9 +1,11 @@
 package gui;
 
+import java.awt.Color;
 //awt imports
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.Rectangle;
 import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -32,6 +34,9 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -50,46 +55,43 @@ import Punkt.Punkt;
 import input.ControlInput;//autocorrection
 import input.ControlInputException;//autocorrection exception
 import input.EmptyInputException;//empty input exception
-
+import roboter.Robot;
 //robot imports 
 import roboter.RoboterException;//robot exception
 import telemetrie.Telemetrie;
 import telemetrie.Telemetrieauswerter;
-import roboter.Robot;
-import javax.swing.JMenuBar;
-import javax.swing.JMenu;
-import java.awt.Color;
-import javax.swing.JMenuItem;
 
 /**
  * Window application for controlling the robot
  */
-public class Software extends JFrame {
+public class Software extends JFrame implements Runnable {
     private static final long serialVersionUID = 1L;
-    private String version = "1.1.1";// version
-    private Robot myRobot;// robot
+    private String version = "3.0";// version
+    public Robot myRobot;// robot
     private String device;// devicename (essential for controlling the robot)
 
     ArrayList<Punkt> liste;
-    ArrayList<RoboterException> roboterExceptionListe;
-    ArrayList<Telemetrie> aktuelleTelemetrie;
+    public ArrayList<RoboterException> roboterExceptionListe;
+    public ArrayList<Telemetrie> aktuelleTelemetrie;
 
     private JPanel contentPane;
     private JScrollPane scrollPane;
-    private JTextArea textArea;
+    public JTextArea textArea;
     private JTextField tfX;
     private JTextField tfY;
     private JTextField tfZ;
     private JTextField tfMID;
     private JTextField tfWert;
     private JRadioButton rdbtnStatusausgaben;
-    private JRadioButton rdbtnFehlermeldungen;
+    public JRadioButton rdbtnFehlermeldungen;
     private JRadioButton rdbtnAutokorrektur;
     private JRadioButton rbTelemetrie;
     private JButton btnAusfuehren;
     private JButton btnLeeren;
     private JButton btnClose;
     private JButton btnBefehl;
+    private JButton btnAblauf;
+    private JButton btnVerbinden;
 
     // temp
     private JMenu mnHilfe;
@@ -100,12 +102,19 @@ public class Software extends JFrame {
     private JMenuItem mntmAktuelleTelemetrieSpeichern;
     private JMenuItem mntmVerbindungstest;
     private JMenuItem mntmReadme;
-    private JButton btnZeigePunkte;
+    private JButton btnZeigeAblauf;
+    public boolean statusausgabe;
+
+    public boolean isRunningP = false;
+    public boolean isRunningA = false;
+    public boolean stop = false;
+    Thread t;
+    Punkt p = null;
 
     /**
      * Launch the application.
      */
-    public static void main(String[] args) {
+    public static void main(String[] args, int x, int y) {
 	try {
 	    UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
 	} catch (Throwable e) {
@@ -118,12 +127,12 @@ public class Software extends JFrame {
 
 		    // decides if the default devicename gets used or a spacific one
 		    if (args.length == 0)
-			frame = new Software("COM3");
+			frame = new Software("COM3", x, y);
 		    else {
 			if (args[0].contains("COM"))
-			    frame = new Software(args[0]);
+			    frame = new Software(args[0], x, y);
 			else {
-			    frame = new Software("COM3");
+			    frame = new Software("COM3", x, y);
 			    System.out.println("The programm was started with the argument \"" + args[0]
 				    + "\"\nIt seems like this is not correct. To make sure the frame gets "
 				    + "created and the robot is controlabel it was started with the default value auf \"COM3\"");
@@ -139,10 +148,22 @@ public class Software extends JFrame {
 	});
     }
 
+    public static void main(String[] args) {
+	main(args, 100, 100);
+    }
+
     /**
      * Create the frame.
+     * 
+     * @wbp.parser.constructor
      */
     public Software(String str) {
+	this(str, 100, 100);
+    }
+
+    public Software(String str, int x, int y) {
+	t = new Thread(this, "Perform");
+
 	aktuelleTelemetrie = null;
 
 	device = str;// get device name
@@ -171,11 +192,11 @@ public class Software extends JFrame {
 
 	    @Override
 	    public void componentShown(ComponentEvent e) {
-		startUpProcedure();
+		// startUpProcedure();
 	    }
 	});
-	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	setBounds(100, 100, 900, 428);
+	setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+	setBounds(x, y, 900, 428);
 
 	JMenuBar menuBar = new JMenuBar();
 	menuBar.setBorderPainted(false);
@@ -193,7 +214,7 @@ public class Software extends JFrame {
 	mntmNewMenuItem.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent e) {
 		String[] args = new String[0];
-		main(args);
+		main(args, 100, 100);
 	    }
 	});
 	mnDatei.add(mntmNewMenuItem);
@@ -203,7 +224,10 @@ public class Software extends JFrame {
 	mntmNeustart.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent e) {
 		String[] args = new String[0];
-		main(args);
+
+		Rectangle rt = getBounds();
+
+		main(args, rt.x, rt.y);
 		setVisible(false);
 	    }
 	});
@@ -282,6 +306,56 @@ public class Software extends JFrame {
 	    }
 	});
 	mnRobot.add(mntmVerbindungstest);
+
+	JMenuItem mntmRoboterStresstest = new JMenuItem("Roboter Stresstest");
+	mntmRoboterStresstest.setEnabled(false);
+	mntmRoboterStresstest.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent k) {
+		int dialogButton = JOptionPane.YES_NO_OPTION;
+
+		int dialogResult = JOptionPane.showConfirmDialog(null, "Stresstest starten? (Dauert bis zu 48 Minuten)",
+			"Meldung", dialogButton);
+
+		if (dialogResult == JOptionPane.YES_OPTION) {
+		    ArrayList<Punkt> stresstestPunkte = new ArrayList<Punkt>();
+
+		    aktuelleTelemetrie = new ArrayList<Telemetrie>();
+
+		    for (int i = 0; i < 150; i++) {
+			stresstestPunkte.add(new Punkt(100, 100, 100));
+			stresstestPunkte.add(new Punkt(200, 100, 100));
+		    }
+
+		    // ablauf(stresstestPunkte);
+
+		    String dateiname = "." + "StresstestTelemetrie"
+			    + LocalDateTime.now().toString().replaceAll(":", "_") + ".tmt";
+
+		    if (aktuelleTelemetrie != null) {
+			ObjectOutputStream oos = null;
+
+			try {
+			    oos = new ObjectOutputStream(new FileOutputStream(dateiname));
+			    oos.writeObject(aktuelleTelemetrie);
+			} catch (IOException e) { // TODO Auto-generated catch block
+			    e.printStackTrace();
+			} finally {
+			    try {
+				oos.close();
+			    } catch (IOException e) { // TODO Auto-generated catch block
+				e.printStackTrace();
+			    }
+			}
+		    } else {
+			JOptionPane.showMessageDialog(null,
+				"Es existieren aktuell keine Telemetriedaten in der Laufzeitumgebung.");
+		    }
+
+		}
+	    }
+	});
+	mntmRoboterStresstest.setFont(new Font("Arial", Font.PLAIN, 12));
+	mnRobot.add(mntmRoboterStresstest);
 	mnRobot.add(mntmTelemetrieanalyse);
 
 	mntmAktuelleTelemetrieSpeichern = new JMenuItem("aktuelle Telemetrie Speichern");
@@ -481,8 +555,9 @@ public class Software extends JFrame {
 	btnAusfuehren.addKeyListener(new KeyAdapter() {
 	    @Override
 	    public void keyPressed(KeyEvent e) {
-		if (e.getKeyCode() == KeyEvent.VK_ENTER)
+		if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 		    perform();
+		}
 	    }
 	});
 	btnAusfuehren.addActionListener(new ActionListener() {
@@ -547,7 +622,7 @@ public class Software extends JFrame {
 		    close();
 	    }
 	});
-	btnClose.setBounds(124, 327, 119, 23);
+	btnClose.setBounds(107, 327, 119, 23);
 	contentPane.add(btnClose);
 
 	// button Leeren
@@ -571,7 +646,7 @@ public class Software extends JFrame {
 	contentPane.add(btnLeeren);
 
 	// button Verbinden
-	JButton btnVerbinden = new JButton("Verbindungstest");
+	btnVerbinden = new JButton("Verbindungstest");
 	btnVerbinden.addKeyListener(new KeyAdapter() {
 	    @Override
 	    public void keyPressed(KeyEvent e) {
@@ -607,11 +682,11 @@ public class Software extends JFrame {
 	});
 	btnSetzen.setFont(new Font("Arial", Font.PLAIN, 12));
 	btnSetzen.setBackground(SystemColor.controlShadow);
-	btnSetzen.setBounds(124, 295, 119, 23);
+	btnSetzen.setBounds(107, 295, 119, 23);
 	contentPane.add(btnSetzen);
 
 	// button Ablauf
-	JButton btnAblauf = new JButton("Ablauf");
+	btnAblauf = new JButton("Ablauf");
 	btnAblauf.addKeyListener(new KeyAdapter() {
 	    @Override
 	    public void keyPressed(KeyEvent e) {
@@ -666,7 +741,7 @@ public class Software extends JFrame {
 		    auslesen();
 	    }
 	});
-	btnAuslesen.setBounds(124, 268, 119, 23);
+	btnAuslesen.setBounds(107, 268, 119, 23);
 	contentPane.add(btnAuslesen);
 
 	// radioButton Statusausgabe (dis-/enabels textArea)
@@ -750,20 +825,19 @@ public class Software extends JFrame {
 	rbTelemetrie.setBounds(202, 214, 124, 23);
 	contentPane.add(rbTelemetrie);
 
-	btnZeigePunkte = new JButton("zeige Punkte");
-	btnZeigePunkte.addKeyListener(new KeyAdapter() {
+	btnZeigeAblauf = new JButton("zeige Ablauf");
+	btnZeigeAblauf.addKeyListener(new KeyAdapter() {
 	    @Override
 	    public void keyPressed(KeyEvent e) {
 		if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 		    getPunktListe();
 		    for (Punkt p : liste) {
-
 			textArea.append(p.getX() + " " + p.getY() + " " + p.getZ() + "\n");
 		    }
 		}
 	    }
 	});
-	btnZeigePunkte.addActionListener(new ActionListener() {
+	btnZeigeAblauf.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent e) {
 		if (e.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
 		    getPunktListe();
@@ -774,10 +848,29 @@ public class Software extends JFrame {
 		}
 	    }
 	});
-	btnZeigePunkte.setFont(new Font("Arial", Font.PLAIN, 12));
-	btnZeigePunkte.setBackground(SystemColor.controlShadow);
-	btnZeigePunkte.setBounds(203, 181, 119, 23);
-	contentPane.add(btnZeigePunkte);
+	btnZeigeAblauf.setFont(new Font("Arial", Font.PLAIN, 12));
+	btnZeigeAblauf.setBackground(SystemColor.controlShadow);
+	btnZeigeAblauf.setBounds(203, 181, 119, 23);
+	contentPane.add(btnZeigeAblauf);
+
+	JButton btnStop = new JButton("Stop");
+	btnStop.addActionListener(new ActionListener() {
+	    public void actionPerformed(ActionEvent e) {
+		stop = true;
+		t.interrupt();
+		try {
+		    t.join(10);
+		} catch (InterruptedException e1) {
+		    // TODO Auto-generated catch block
+		    e1.printStackTrace();
+		}
+		// t.stop();
+	    }
+	});
+	btnStop.setFont(new Font("Arial", Font.PLAIN, 12));
+	btnStop.setBackground(SystemColor.controlShadow);
+	btnStop.setBounds(236, 266, 79, 84);
+	contentPane.add(btnStop);
 	setFocusTraversalPolicy(new FocusTraversalOnArray(new Component[] { tfX, tfY, tfZ, btnSimulieren, btnAusfuehren,
 		btnAblauf, btnVerbinden, btnLeeren, btnBefehl, tfMID, tfWert, btnAuslesen, btnSetzen, btnClose,
 		rdbtnStatusausgaben, rdbtnFehlermeldungen, rdbtnAutokorrektur }));
@@ -801,15 +894,16 @@ public class Software extends JFrame {
 	if (!verzeichnis.exists())
 	    verzeichnis.mkdir();
 
+	// TODO: dies sollte Betriebssystem unabhaehing werden
 	verzeichnis = new File("C:\\Windows\\System32\\dxl_x64_c.dll");
 
 	if (!verzeichnis.exists()) {
 	    JOptionPane.showMessageDialog(null,
 		    "Die Bibilothek dxl_x64_c.dll ist nicht vorhanden. Der Roboter"
-		    + " ist daher nicht ansteuerbar und einige Funktionen sind deaktiviert, "
-		    + "die anderen Tools sollten aber weiterhin funktionieren.\nIm Readme wird"
-		    + " beschrieben wie das Problem gelöst werden kann. (Das Readme kann, falls"
-		    + " nicht auffindbar, mit dem Programm generiert werden)");
+			    + " ist daher nicht ansteuerbar und einige Funktionen sind deaktiviert, "
+			    + "die anderen Tools sollten aber weiterhin funktionieren.\nIm Readme wird"
+			    + " beschrieben wie das Problem gelöst werden kann. (Das Readme kann, falls"
+			    + " nicht auffindbar, mit dem Programm generiert werden)");
 
 	    btnSimulieren.setEnabled(false);
 	    btnAusfuehren.setEnabled(false);
@@ -821,6 +915,7 @@ public class Software extends JFrame {
 	    rbTelemetrie.setEnabled(false);
 	}
 
+	// startUpProcedure();
     }
 
     /**
@@ -1043,7 +1138,6 @@ public class Software extends JFrame {
      * Performs movement to a point
      */
     private void perform() {
-	Punkt p = null;
 	int x, y, z;// var. for coordinates
 	boolean statusausgabe = rdbtnStatusausgaben.isSelected();
 	boolean fehlermeldung = rdbtnFehlermeldungen.isSelected();
@@ -1190,37 +1284,11 @@ public class Software extends JFrame {
 	    tfX.requestFocus();
 	    tfX.selectAll();
 
-	    try {
-		if (connect()) {
-		    Instant begin = Instant.now();
+	    if (!t.isAlive())
+		t.start();
 
-		    myRobot.moveto(p);
+	    isRunningP = true;
 
-		    Duration dur = Duration.between(begin, Instant.now());
-
-		    textArea.append(myRobot.moveStr + "\n\n");
-
-		    aktuelleTelemetrie = myRobot.getTelemetrie();
-
-		    disconnect();
-		    textArea.append("Bewegung beendet. Sie hat " + dur.toMillis() + " ms gedauert.\n");
-		}
-	    } catch (RoboterException e) {
-		e.printStackTrace();
-
-		roboterExceptionListe.add(e);
-
-		if (statusausgabe)
-		    textArea.append(e.getMessage());
-
-		if (fehlermeldung)
-		    JOptionPane.showMessageDialog(null, e.getMessage());
-
-		// e.analyseTelemetrie();
-	    } catch (NullPointerException e) {
-		e.printStackTrace();
-		System.out.print("Nullpointer Exception");
-	    }
 	}
 	// error handling
 	catch (EmptyInputException e) {
@@ -1266,74 +1334,28 @@ public class Software extends JFrame {
 	} finally {
 	    textArea.append("Ausführen beendet\n**************************\n");
 	    try {
-		myRobot.manualDisconnect();
-	    } catch (RoboterException e) {
+		// myRobot.manualDisconnect();
+	    } catch (/* RoboterException */ Exception e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	    }
 	}
-	System.out.println("dsabhkdashiludhasklhg");
 
     }
 
     /**
      * Performs movements to a list point
      */
+
     private void ablauf() {
+	if (!t.isAlive())
+	    t.start();
+
 	getPunktListe();
-	final long delay = 200; // delay between 2 operaton in ms
 
 	textArea.append("**************************\nAblauf beginnt\n");
 
-	if (connect()) {
-	    Instant begin = Instant.now();
-
-	    for (int i = 0; i < liste.size(); i++) {
-		try {
-		    System.out.println("I:" + i);
-
-		    myRobot.moveto(liste.get(i));
-
-		    System.out.println(myRobot.getTemperature((byte) 0));
-		    System.out.println(myRobot.getTemperature((byte) 1));
-		    System.out.println(myRobot.getTemperature((byte) 2));
-
-		    textArea.append("Punkt " + (i + 1) + " von " + liste.size() + " angesteuert\n");
-
-		    try {
-			Thread.sleep(delay);
-		    } catch (InterruptedException e) {
-			e.printStackTrace();
-		    }
-		} catch (RoboterException e) {
-
-		    roboterExceptionListe.add(e);
-
-		    i = liste.size();
-
-		    // TODO Auto-generated catch block
-		    e.printStackTrace();
-
-		    System.out.println("Abbr");
-
-		    // e.analyseTelemetrie();
-		}
-	    }
-
-	    Duration dur = Duration.between(begin, Instant.now());
-
-	    aktuelleTelemetrie = myRobot.getTelemetrie();
-
-	    System.out.println("dsddsdssssss");
-
-	    disconnect();
-
-	    textArea.append("Ausführung hat " + dur.toMillis() + " ms gedauert.\n");
-	}
-
-	textArea.append("Ablauf beendet\n**************************\n");
-
-	System.out.println("Abbruch");
+	isRunningA = true;
     }
 
     /**
@@ -1729,9 +1751,11 @@ public class Software extends JFrame {
      */
     private void close() {
 	textArea.append("Beende Programm\n");
+	stop = true;
 	System.gc();
 	this.disconnect();
 	this.setVisible(false);
+	System.exit(0);
     }
 
     /*
@@ -1739,41 +1763,9 @@ public class Software extends JFrame {
      */
 
     /**
-     * start procedure after creating the frame
-     */
-    private void startUpProcedure() {
-	int dialogButton = JOptionPane.YES_NO_OPTION;
-
-	int dialogResult = JOptionPane.showConfirmDialog(null, "Sind die IDs richtig konfiguriert?", "Warnung!",
-		dialogButton);
-
-	if (dialogResult == JOptionPane.NO_OPTION)
-	    close();
-
-	dialogResult = JOptionPane.showConfirmDialog(null,
-		"Ist der Devicename " + this.device
-			+ " korrekt? Wenn nicht dann manuell über Geräte-Manager und Konsole starten.",
-		"Warnung!", dialogButton);
-
-	if (dialogResult == JOptionPane.NO_OPTION)
-	    close();
-
-	dialogResult = JOptionPane.showConfirmDialog(null, "Ist RoboPlus disconnected?", "Warnung!", dialogButton);
-
-	if (dialogResult == JOptionPane.NO_OPTION)
-	    close();
-
-	dialogResult = JOptionPane.showConfirmDialog(null, "Soll eine Testverbindung hergestellt werden? (Empfohlen)",
-		"Testverbindung?", dialogButton);
-
-	if (dialogResult == JOptionPane.YES_OPTION)
-	    connectionTest();
-    }
-
-    /**
      * connects with robot
      */
-    private boolean connect() {
+    public boolean connect() {
 	try {
 	    myRobot = new Robot(device);
 	    return true;
@@ -1803,7 +1795,7 @@ public class Software extends JFrame {
     /**
      * disconnects from robot
      */
-    private void disconnect() {
+    public void disconnect() {
 	try {
 	    myRobot.manualDisconnect();
 	    myRobot = null;
@@ -1817,6 +1809,8 @@ public class Software extends JFrame {
 
 	    if (rdbtnFehlermeldungen.isSelected())
 		JOptionPane.showMessageDialog(null, "Es konnte keine Verbindung zum Roboter hergestellt werden\n");
+	} catch (NullPointerException e) {
+
 	} catch (Exception e) {
 	    e.printStackTrace();
 
@@ -1926,18 +1920,147 @@ public class Software extends JFrame {
 		}
 
 		for (int i = 0; i < punktListe.size(); i++) {
-		    StringBuffer strbf = new StringBuffer(punktListe.elementAt(i));
-		    short x = (short) Double.parseDouble(strbf.substring(0, strbf.indexOf(" ")));
-		    strbf = new StringBuffer(strbf.substring(0, (strbf.indexOf(" ") + 1)));
-		    short y = (short) Double.parseDouble(strbf.substring(0, strbf.indexOf(" ")));
-		    strbf = new StringBuffer(strbf.substring(0, (strbf.indexOf(" ") + 1)));
-		    short z = (short) Double.parseDouble(strbf.substring(0, strbf.indexOf(" ")));
+		    String strbf = punktListe.elementAt(i);
+
+		    short x, y, z;
+
+		    x = (short) Double.parseDouble(strbf.substring(0, strbf.indexOf(" ")));
+
+		    strbf = strbf.substring(strbf.indexOf(" ") + 1);
+
+		    y = (short) Double.parseDouble(strbf.substring(0, strbf.indexOf(" ")));
+
+		    strbf = strbf.substring(strbf.indexOf(" ") + 1);
+
+		    z = (short) Double.parseDouble(strbf.substring(0));
 
 		    liste.add(new Punkt(x, y, z));
+
 		}
 	    } catch (IOException ex) {
 		ex.printStackTrace();
+		System.out.println("Error while getting Pointlist");
+		JOptionPane.showMessageDialog(null, "Warnung! Fehler beim auslesen der Punkte für den Ablauf");
 	    }
 	}
+    }
+
+    @Override
+    public void run() {
+	int counter = 0;
+	while (!stop) {
+	    System.out.println("is running");
+	    counter++;
+	    if (isRunningP) {
+		counter = 0;
+		btnAusfuehren.setEnabled(false);
+		btnAblauf.setEnabled(false);
+		btnVerbinden.setEnabled(false);
+		mntmVerbindungstest.setEnabled(false);
+		moveP();
+		btnAusfuehren.setEnabled(true);
+		btnAblauf.setEnabled(true);
+		btnVerbinden.setEnabled(true);
+		mntmVerbindungstest.setEnabled(true);
+	    } else if (isRunningA) {
+		counter = 0;
+		btnAusfuehren.setEnabled(false);
+		btnAblauf.setEnabled(false);
+		btnVerbinden.setEnabled(false);
+		mntmVerbindungstest.setEnabled(false);
+		moveA();
+		btnAusfuehren.setEnabled(true);
+		btnAblauf.setEnabled(true);
+		btnVerbinden.setEnabled(true);
+		mntmVerbindungstest.setEnabled(true);
+	    }
+
+	    if (counter > 15) {
+		Thread.currentThread().interrupt();
+		counter = 0;
+	    }
+	}
+	btnAusfuehren.setEnabled(true);
+	btnAblauf.setEnabled(true);
+	btnVerbinden.setEnabled(true);
+	mntmVerbindungstest.setEnabled(true);
+    }
+
+    public void moveP() {
+	try {
+	    connect();
+	    myRobot.moveto(p);
+	} catch (RoboterException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
+
+	// Duration dur = Duration.between(begin, Instant.now());
+
+	textArea.append(myRobot.moveStr + "\n\n");
+
+	aktuelleTelemetrie = myRobot.getTelemetrie();
+
+	disconnect();
+	// textArea.append("Bewegung beendet. Sie hat " + dur.toMillis() + " ms
+	// gedauert.\n");
+	isRunningP = false;
+    }
+
+    public void moveA() {
+	final long delay = 200; // delay between 2 operaton in ms
+	if (connect()) {
+	    Instant begin = Instant.now();
+
+	    for (int i = 0; i < liste.size(); i++) {
+		try {
+		    System.out.println("i:" + i);
+
+		    myRobot.moveto(liste.get(i));
+
+		    System.out.println(myRobot.getTemperature((byte) 0));
+		    System.out.println(myRobot.getTemperature((byte) 1));
+		    System.out.println(myRobot.getTemperature((byte) 2));
+
+		    textArea.append("Punkt " + (i + 1) + " von " + liste.size() + " angesteuert\n");
+
+		    try {
+			Thread.sleep(delay);
+		    } catch (InterruptedException e) {
+			e.printStackTrace();
+		    }
+		} catch (RoboterException e) {
+		    JOptionPane.showMessageDialog(null, "Abbr");
+
+		    roboterExceptionListe.add(e);
+
+		    i = liste.size();
+
+		    // TODO Auto-generated catch block
+		    e.printStackTrace();
+
+		    System.out.println("Abbr");
+
+		    // e.analyseTelemetrie();
+		}
+	    }
+
+	    Duration dur = Duration.between(begin, Instant.now());
+
+	    textArea.append("Ausführung hat " + dur.toMillis() + " ms gedauert.\n");
+	}
+
+	aktuelleTelemetrie = new ArrayList<Telemetrie>();
+
+	for (Telemetrie daten : myRobot.getTelemetrie()) {
+	    System.out.println(daten.getData());
+	    aktuelleTelemetrie.add(daten);
+	}
+
+	disconnect();
+
+	textArea.append("Ablauf beendet\n**************************\n");
+
+	isRunningA = false;
     }
 }

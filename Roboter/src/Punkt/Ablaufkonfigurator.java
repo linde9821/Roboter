@@ -1,19 +1,8 @@
 package Punkt;
 
-import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.EventQueue;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-import javax.swing.UIManager;
-import javax.swing.JScrollPane;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JTextField;
-import javax.swing.JLabel;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -22,10 +11,21 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.awt.event.ActionEvent;
+
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
+
 import org.eclipse.wb.swing.FocusTraversalOnArray;
-import java.awt.Component;
 
 public class Ablaufkonfigurator extends JFrame {
 
@@ -66,7 +66,6 @@ public class Ablaufkonfigurator extends JFrame {
      * Create the frame.
      */
     public Ablaufkonfigurator() {
-	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	setBounds(100, 100, 450, 392);
 	contentPane = new JPanel();
 	contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -100,23 +99,29 @@ public class Ablaufkonfigurator extends JFrame {
 		while ((punktzeile = in.readLine()) != null) {
 		    punktListe.addElement(punktzeile);
 		}
-		
-		for (int i = 0; i < punktListe.size(); i++) {
-		    StringBuffer strbf = new StringBuffer(punktListe.elementAt(i));
-		    short x = (short) Double.parseDouble(strbf.substring(0, strbf.indexOf(" ")));
-		    strbf = new StringBuffer(strbf.substring(0, (strbf.indexOf(" ") + 1)));
-		    short y = (short) Double.parseDouble(strbf.substring(0, strbf.indexOf(" ")));
-		    strbf = new StringBuffer(strbf.substring(0, (strbf.indexOf(" ") + 1)));
-		    short z = (short) Double.parseDouble(strbf.substring(0, strbf.indexOf(" ")));
 
+		for (int i = 0; i < punktListe.size(); i++) {
+		    String strbf = punktListe.elementAt(i);
+		    
+		    short x,y,z;
+		    
+		    x = (short) Double.parseDouble(strbf.substring(0, strbf.indexOf(" ")));
+		    
+		    strbf = strbf.substring(strbf.indexOf(" ") + 1);
+
+		    y = (short) Double.parseDouble(strbf.substring(0, strbf.indexOf(" ")));
+		    
+		    strbf = strbf.substring(strbf.indexOf(" ") + 1);
+		    
+		    z = (short) Double.parseDouble(strbf.substring(0));
+		    
 		    punktArrayListe.add(new Punkt(x, y, z));
+
 		}
 	    } catch (IOException ex) {
 		ex.printStackTrace();
 	    }
 	}
-
-
 
 	tfX = new JTextField();
 	tfX.setBounds(30, 11, 86, 20);
@@ -153,14 +158,13 @@ public class Ablaufkonfigurator extends JFrame {
 		short z = Short.parseShort(tfZ.getText());
 
 		punktArrayListe.add(new Punkt(x, y, z));
-		punktListe.addElement("P" + punktArrayListe.size() + " " + new Punkt(x, y, z).toString());
+		punktListe.addElement(new Punkt(x, y, z).toString());
 
 		tfX.setText("");
 		tfY.setText("");
 		tfZ.setText("");
 
 		tfX.requestFocus();
-
 	    }
 	});
 	btnHinzufgen.setBounds(126, 10, 89, 23);
