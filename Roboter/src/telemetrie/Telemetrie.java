@@ -2,6 +2,8 @@ package telemetrie;
 
 import java.time.LocalTime;
 
+import javax.swing.JOptionPane;
+
 import roboter.Robot;
 
 import java.io.Serializable;
@@ -88,6 +90,12 @@ public class Telemetrie implements Serializable {
 		dur = Duration.between(temp, Instant.now());
 
 		error = checkForError();
+		
+		if (error == true) {
+		   // JOptionPane.showMessageDialog(null, this.getInfo());
+		    error = checkForError();
+		}
+		
 		empty = false;
 	    } else {
 		gradM1 = -1;
@@ -123,7 +131,7 @@ public class Telemetrie implements Serializable {
 	if (gradM2 < Robot.min[1] || gradM2 > Robot.max[1])
 	    return true;
 
-	if (gradM3 < Robot.min[2] || gradM1 > Robot.max[2])
+	if (gradM3 < Robot.min[2] || gradM3 > Robot.max[2])
 	    return true;
 
 	if (speedM1 > Robot.speedM1)

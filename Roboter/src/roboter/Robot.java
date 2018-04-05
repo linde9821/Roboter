@@ -17,7 +17,7 @@ import dynamixel.Dynamixel;
 import telemetrie.Telemetrie;
 
 public class Robot implements Cloneable {
-    public static final String version = "robot 2.1.1"; // current version
+    public static final String version = "robot 3.0"; // current version
     public static final double B1_DIAMATER = 52.5f * 2;// Durchmesser Bauteil 1
     public static final double B2_LENGTH = 222;// Länge Bauteil 2
     public static final double B3_LENGTH = 197;// Länge Bauteil 3
@@ -57,7 +57,7 @@ public class Robot implements Cloneable {
     short ADDR_Moving_Speed_Low = 32;
 
     // [in Source Code]-Settings
-    private final boolean allowTelemetrieDuringMovment = false;
+    private final boolean allowTelemetrieDuringMovment = true;
 
     // Protocol version
     int PROTOCOL_VERSION = 1; // See which protocol version is used in the Dynamixel
@@ -184,7 +184,8 @@ public class Robot implements Cloneable {
     }
 
     public ArrayList<Telemetrie> getTelemetrie() {
-	return robotTelemetrie;
+	ArrayList<Telemetrie> temp = new ArrayList<Telemetrie>(robotTelemetrie);
+	return temp;
     }
 
     public static boolean isTelemetrieerfassung() {
@@ -231,7 +232,7 @@ public class Robot implements Cloneable {
     public void writeGoalPosition(byte id, double goal) throws RoboterException {
 	addCurrentTelemetrie();
 
-	// Instant beg = Instant.now();
+	//Instant beg = Instant.now();
 
 	if (goal < min[id] || goal > max[id]) {
 	    throw new RoboterException("Nicht nutzbarer Wert für Motor " + id + " mit " + goal, this);
@@ -257,10 +258,10 @@ public class Robot implements Cloneable {
 		if (allowTelemetrieDuringMovment)
 		    addCurrentTelemetrie();
 
-		// testen
-		// if (Duration.between(beg, Instant.now()).compareTo(Duration.ofMillis(0)) >
-		// 1500)
-		// throw new RoboterException("Zeitablauf", this);
+		/*
+		if (Duration.between(beg, Instant.now()).compareTo(otherDuration)
+		    throw new RoboterException("Zeitablauf", this);
+		    */
 
 	    } while (Math.abs(dxl_present_position - (short) goal) >= ADDR_MX_PRESENT_POSITION);
 
@@ -549,7 +550,7 @@ public class Robot implements Cloneable {
 
     // addes current telemetrie to telemetrie-list
     void addCurrentTelemetrie() {
-	final int storagePoints = 100;
+	final int storagePoints = 99;
 	if (telemetrieerfassung) {
 	    if (robotTelemetrie.size() > storagePoints) {
 		robotTelemetrie.remove(0);

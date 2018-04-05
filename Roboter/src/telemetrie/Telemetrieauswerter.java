@@ -169,6 +169,10 @@ public class Telemetrieauswerter extends JFrame {
 	JButton btnSpeichernAls = new JButton("zu .xlsx");
 	btnSpeichernAls.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent e) {
+		
+		//auf maximale Zeilen Testen und anpassen
+		//65536 
+		
 		String filename = dateiname.toString().replaceAll(".tmt", "") + ".xls";
 
 		try {
