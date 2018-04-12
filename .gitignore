@@ -20,13 +20,13 @@
 
 #protocol and telemetriedata
 Protokoll.txt
-TelemetrieDaten
-TelemetrieException
+TelemetrieDaten/
+TelemetrieException/
 #.tmt
 standardTelemetrieDatensatz.tmt
 
 #javadoc
-javadoc
+javadoc/
 
 #punktliste
 punktListe.pkt
@@ -38,7 +38,7 @@ Logo.java
 Vektor.java
 
 #Testprogramme 
-testprogramme 
+testprogramme/ 
 test.java
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
