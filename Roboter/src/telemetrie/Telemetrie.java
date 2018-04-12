@@ -1,14 +1,11 @@
 package telemetrie;
 
-import java.time.LocalTime;
-
-import javax.swing.JOptionPane;
-
-import roboter.Robot;
-
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalTime;
+
+import roboter.Robot;
 
 //testing needed 
 public class Telemetrie implements Serializable {
@@ -90,12 +87,12 @@ public class Telemetrie implements Serializable {
 		dur = Duration.between(temp, Instant.now());
 
 		error = checkForError();
-		
+
 		if (error == true) {
-		   // JOptionPane.showMessageDialog(null, this.getInfo());
+		    // JOptionPane.showMessageDialog(null, this.getInfo());
 		    error = checkForError();
 		}
-		
+
 		empty = false;
 	    } else {
 		gradM1 = -1;

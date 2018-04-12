@@ -2,6 +2,7 @@
 <classpath>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="linux32"/>
 	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/aix-ppc.jar"/>
 	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/aix-ppc64.jar"/>
 	<classpathentry exported="true" kind="lib" path="F:/Programmieren/Java/libarys/jna-master/lib/native/android-aarch64.jar"/>

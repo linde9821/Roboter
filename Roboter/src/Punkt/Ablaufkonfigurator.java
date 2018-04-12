@@ -102,19 +102,19 @@ public class Ablaufkonfigurator extends JFrame {
 
 		for (int i = 0; i < punktListe.size(); i++) {
 		    String strbf = punktListe.elementAt(i);
-		    
-		    short x,y,z;
-		    
+
+		    short x, y, z;
+
 		    x = (short) Double.parseDouble(strbf.substring(0, strbf.indexOf(" ")));
-		    
+
 		    strbf = strbf.substring(strbf.indexOf(" ") + 1);
 
 		    y = (short) Double.parseDouble(strbf.substring(0, strbf.indexOf(" ")));
-		    
+
 		    strbf = strbf.substring(strbf.indexOf(" ") + 1);
-		    
+
 		    z = (short) Double.parseDouble(strbf.substring(0));
-		    
+
 		    punktArrayListe.add(new Punkt(x, y, z));
 
 		}
@@ -220,6 +220,8 @@ public class Ablaufkonfigurator extends JFrame {
 	contentPane.add(btnSchließen);
 	setFocusTraversalPolicy(new FocusTraversalOnArray(
 		new Component[] { tfX, tfY, tfZ, btnHinzufgen, btnLschen, btnMarkiertenPunktBearbeiten }));
+
+	setTitle("Ablaufkonfigurator");
     }
 
     private void close() {

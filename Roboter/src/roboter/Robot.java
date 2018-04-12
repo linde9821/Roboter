@@ -30,6 +30,9 @@ public class Robot implements Cloneable {
     public final static short speedM1 = 80;
     public final static short speedM2 = 40;
     public final static short speedM3 = 40;
+    public final static short speedM4 = 0;
+    public final static short speedM5 = 0;
+    public final static short speedM6 = 0;
     public final static short tempratureMax = 60;// in °C
     public final static short[] min = new short[] { 0, 150, 10 };
     public final static short[] max = new short[] { 1023, 517, 517 };
@@ -37,6 +40,16 @@ public class Robot implements Cloneable {
 
     private static int amount = 0;
     int id;
+
+    boolean stop = false;
+
+    public boolean isStop() {
+	return stop;
+    }
+
+    public void setStop(boolean stop) {
+	this.stop = stop;
+    }
 
     private static boolean telemetrieerfassung;
     private ArrayList<Telemetrie> robotTelemetrie;
@@ -63,7 +76,7 @@ public class Robot implements Cloneable {
     int PROTOCOL_VERSION = 1; // See which protocol version is used in the Dynamixel
 
     // IDs for the Dynamixels
-    byte[] DXL_ID = new byte[] { 0, 1, 2 };
+    byte[] DXL_ID = new byte[] { 0, 1, 2, 3, 4, 5 };
 
     int BAUDRATE = 1000000;
     String DEVICENAME = "COM3"; // Check which port is being used on your controller Windows: "COM1-COM5"
@@ -134,6 +147,9 @@ public class Robot implements Cloneable {
 	    dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[0], ADDR_MX_TORQUE_ENABLE, TORQUE_ENABLE);
 	    dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[1], ADDR_MX_TORQUE_ENABLE, TORQUE_ENABLE);
 	    dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[2], ADDR_MX_TORQUE_ENABLE, TORQUE_ENABLE);
+	    dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[3], ADDR_MX_TORQUE_ENABLE, TORQUE_DISABLE);
+	    dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[4], ADDR_MX_TORQUE_ENABLE, TORQUE_DISABLE);
+	    dynamixel.write1ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[5], ADDR_MX_TORQUE_ENABLE, TORQUE_DISABLE);
 
 	    if ((dxl_comm_result = dynamixel.getLastTxRxResult(port_num, PROTOCOL_VERSION)) != COMM_SUCCESS) {
 		System.out.println(dynamixel.getTxRxResult(PROTOCOL_VERSION, dxl_comm_result));
@@ -150,6 +166,9 @@ public class Robot implements Cloneable {
 	    dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[0], ADDR_Moving_Speed_Low, speedM1);
 	    dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[1], ADDR_Moving_Speed_Low, speedM2);
 	    dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[2], ADDR_Moving_Speed_Low, speedM3);
+	    dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[3], ADDR_Moving_Speed_Low, speedM4);
+	    dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[4], ADDR_Moving_Speed_Low, speedM5);
+	    dynamixel.write2ByteTxRx(port_num, PROTOCOL_VERSION, DXL_ID[5], ADDR_Moving_Speed_Low, speedM6);
 
 	    // initialise angel values with current servo positions
 	    grad1 = this.getPosition(DXL_ID[0]);
@@ -157,7 +176,6 @@ public class Robot implements Cloneable {
 	    grad3 = this.getPosition(DXL_ID[2]);
 
 	    addCurrentTelemetrie();
-
 	}
 	writeToProtocol("Erfolgreich initialisiert");
     }
@@ -227,12 +245,16 @@ public class Robot implements Cloneable {
 	}
     }
 
+    public boolean stopUpdate() {
+	return false;
+    }
+
     // moves the motors to the calculated positions within the robot to point
     // procedure
     public void writeGoalPosition(byte id, double goal) throws RoboterException {
 	addCurrentTelemetrie();
 
-	//Instant beg = Instant.now();
+	// Instant beg = Instant.now();
 
 	if (goal < min[id] || goal > max[id]) {
 	    throw new RoboterException("Nicht nutzbarer Wert für Motor " + id + " mit " + goal, this);
@@ -247,6 +269,10 @@ public class Robot implements Cloneable {
 		    throw new RoboterException("Fehler beim ansteuern von Motor " + id, this);
 		}
 
+		if (stopUpdate()) {
+		    throw new RoboterException("Stop wurde getriggert!", this);
+		}
+
 		dxl_present_position = dynamixel.read2ByteTxRx(port_num, PROTOCOL_VERSION, id,
 			ADDR_MX_PRESENT_POSITION);
 
@@ -259,9 +285,9 @@ public class Robot implements Cloneable {
 		    addCurrentTelemetrie();
 
 		/*
-		if (Duration.between(beg, Instant.now()).compareTo(otherDuration)
-		    throw new RoboterException("Zeitablauf", this);
-		    */
+		 * if (Duration.between(beg, Instant.now()).compareTo(otherDuration) throw new
+		 * RoboterException("Zeitablauf", this);
+		 */
 
 	    } while (Math.abs(dxl_present_position - (short) goal) >= ADDR_MX_PRESENT_POSITION);
 
@@ -525,8 +551,9 @@ public class Robot implements Cloneable {
     // directly controls the disconnection (lowest point! very important)
     public boolean manualDisconnect() throws RoboterException {
 	try {
-	    dynamixel.closePort(port_num);
 	    dynamixel.clearPort(port_num);
+	    dynamixel.closePort(port_num);
+	    dynamixel.packetHandler();
 	    writeToProtocol("Erfolgreich Disconnected");
 	    return true;
 	} catch (Exception e) {

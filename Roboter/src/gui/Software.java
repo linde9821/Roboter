@@ -92,6 +92,8 @@ public class Software extends JFrame implements Runnable {
     private JButton btnBefehl;
     private JButton btnAblauf;
     private JButton btnVerbinden;
+    private JButton btnSetzen;
+    private JButton btnAuslesen;
 
     // temp
     private JMenu mnHilfe;
@@ -129,14 +131,15 @@ public class Software extends JFrame implements Runnable {
 		    if (args.length == 0)
 			frame = new Software("COM3", x, y);
 		    else {
-			if (args[0].contains("COM"))
-			    frame = new Software(args[0], x, y);
-			else {
-			    frame = new Software("COM3", x, y);
-			    System.out.println("The programm was started with the argument \"" + args[0]
-				    + "\"\nIt seems like this is not correct. To make sure the frame gets "
-				    + "created and the robot is controlabel it was started with the default value auf \"COM3\"");
-			}
+			// if (args[0].contains("COM"))
+			frame = new Software(args[0], x, y);
+			/*
+			 * else { frame = new Software("COM3", x, y);
+			 * System.out.println("The programm was started with the argument \"" + args[0]
+			 * + "\"\nIt seems like this is not correct. To make sure the frame gets " +
+			 * "created and the robot is controlabel it was started with the default value auf \"COM3\""
+			 * ); }
+			 */
 		    }
 
 		    frame.setVisible(true);
@@ -487,7 +490,6 @@ public class Software extends JFrame implements Runnable {
 
 	// scrollPane
 	scrollPane = new JScrollPane();
-	scrollPane.setAutoscrolls(true);
 	scrollPane.setBounds(332, 12, 542, 338);
 	contentPane.add(scrollPane);
 
@@ -666,7 +668,7 @@ public class Software extends JFrame implements Runnable {
 	contentPane.add(btnVerbinden);
 
 	// button Setzen
-	JButton btnSetzen = new JButton("Setzen");
+	btnSetzen = new JButton("Setzen");
 	btnSetzen.addKeyListener(new KeyAdapter() {
 	    @Override
 	    public void keyPressed(KeyEvent e) {
@@ -725,7 +727,7 @@ public class Software extends JFrame implements Runnable {
 	btnBefehl.setBounds(66, 214, 119, 23);
 	contentPane.add(btnBefehl);
 
-	JButton btnAuslesen = new JButton("Auslesen");
+	btnAuslesen = new JButton("Auslesen");
 	btnAuslesen.setBackground(SystemColor.controlShadow);
 	btnAuslesen.setFont(new Font("Arial", Font.PLAIN, 12));
 	btnAuslesen.addKeyListener(new KeyAdapter() {
@@ -855,8 +857,11 @@ public class Software extends JFrame implements Runnable {
 
 	JButton btnStop = new JButton("Stop");
 	btnStop.addActionListener(new ActionListener() {
+	    @SuppressWarnings("deprecation")
 	    public void actionPerformed(ActionEvent e) {
-		stop = true;
+		t.stop();
+
+		stop = true; // TODO: mark
 		t.interrupt();
 		try {
 		    t.join(10);
@@ -864,7 +869,10 @@ public class Software extends JFrame implements Runnable {
 		    // TODO Auto-generated catch block
 		    e1.printStackTrace();
 		}
-		// t.stop();
+		t.stop();
+
+		if (!t.isInterrupted())
+		    System.exit(0);
 	    }
 	});
 	btnStop.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -896,24 +904,24 @@ public class Software extends JFrame implements Runnable {
 
 	// TODO: dies sollte Betriebssystem unabhaehing werden
 	verzeichnis = new File("C:\\Windows\\System32\\dxl_x64_c.dll");
+	//
+	// if (!verzeichnis.exists()) {
+	// JOptionPane.showMessageDialog(null,
+	// "Die Bibilothek dxl_x64_c.dll ist nicht vorhanden. Der Roboter"
+	// + " ist daher nicht ansteuerbar und einige Funktionen sind deaktiviert, "
+	// + "die anderen Tools sollten aber weiterhin funktionieren.\nIm Readme wird"
+	// + " beschrieben wie das Problem gelöst werden kann. (Das Readme kann, falls"
+	// + " nicht auffindbar, mit dem Programm generiert werden)");
 
-	if (!verzeichnis.exists()) {
-	    JOptionPane.showMessageDialog(null,
-		    "Die Bibilothek dxl_x64_c.dll ist nicht vorhanden. Der Roboter"
-			    + " ist daher nicht ansteuerbar und einige Funktionen sind deaktiviert, "
-			    + "die anderen Tools sollten aber weiterhin funktionieren.\nIm Readme wird"
-			    + " beschrieben wie das Problem gelöst werden kann. (Das Readme kann, falls"
-			    + " nicht auffindbar, mit dem Programm generiert werden)");
-
-	    btnSimulieren.setEnabled(false);
-	    btnAusfuehren.setEnabled(false);
-	    btnAblauf.setEnabled(false);
-	    btnVerbinden.setEnabled(false);
-	    mntmVerbindungstest.setEnabled(false);
-	    btnAuslesen.setEnabled(false);
-	    btnSetzen.setEnabled(false);
-	    rbTelemetrie.setEnabled(false);
-	}
+	// btnSimulieren.setEnabled(false);
+	// btnAusfuehren.setEnabled(false);
+	// btnAblauf.setEnabled(false);
+	// btnVerbinden.setEnabled(false);
+	// mntmVerbindungstest.setEnabled(false);
+	// btnAuslesen.setEnabled(false);
+	// btnSetzen.setEnabled(false);
+	// rbTelemetrie.setEnabled(false);
+	// }
 
 	// startUpProcedure();
     }
@@ -1331,16 +1339,7 @@ public class Software extends JFrame implements Runnable {
 		JOptionPane.showMessageDialog(null, "Unbekannter Fehler aufgetreten");
 
 	    e.printStackTrace();
-	} finally {
-	    textArea.append("Ausführen beendet\n**************************\n");
-	    try {
-		// myRobot.manualDisconnect();
-	    } catch (/* RoboterException */ Exception e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	    }
 	}
-
     }
 
     /**
@@ -1420,13 +1419,13 @@ public class Software extends JFrame implements Runnable {
     private void connectionTest() {
 	textArea.append("**************************\nVerbindungstest gestartet\n");
 	if (connect()) {
-	    for (int i = 0; i < 3; i++) {
+	    for (int i = 0; i < 6; i++) {
 		textArea.append(
 			"Motor " + (byte) i + " hat eine Spannung von " + myRobot.getVoltage((byte) i) + "  mV\n");
 	    }
 	    textArea.append("Betriebsspannung:  9  ~ 12V (Empfohlen 11.1V)\n");
 
-	    for (int i = 0; i < 3; i++) {
+	    for (int i = 0; i < 6; i++) {
 		textArea.append("Motor " + (byte) i + " hat eine Temperatur von " + myRobot.getTemperature((byte) i)
 			+ "  °C\n");
 	    }
@@ -1459,6 +1458,9 @@ public class Software extends JFrame implements Runnable {
 		    myRobot.setSpeed((byte) 0, movingSpeedM1);
 		    myRobot.setSpeed((byte) 1, movingSpeedM2);
 		    myRobot.setSpeed((byte) 2, movingSpeedM3);
+		    myRobot.setSpeed((byte) 3, movingSpeedM3);
+		    myRobot.setSpeed((byte) 4, movingSpeedM3);
+		    myRobot.setSpeed((byte) 5, movingSpeedM3);
 		}
 
 	    }
@@ -1957,22 +1959,30 @@ public class Software extends JFrame implements Runnable {
 		btnAblauf.setEnabled(false);
 		btnVerbinden.setEnabled(false);
 		mntmVerbindungstest.setEnabled(false);
+		btnSetzen.setEnabled(false);
+		btnAuslesen.setEnabled(false);
 		moveP();
 		btnAusfuehren.setEnabled(true);
 		btnAblauf.setEnabled(true);
 		btnVerbinden.setEnabled(true);
 		mntmVerbindungstest.setEnabled(true);
+		btnSetzen.setEnabled(true);
+		btnAuslesen.setEnabled(true);
 	    } else if (isRunningA) {
 		counter = 0;
 		btnAusfuehren.setEnabled(false);
 		btnAblauf.setEnabled(false);
 		btnVerbinden.setEnabled(false);
 		mntmVerbindungstest.setEnabled(false);
+		btnSetzen.setEnabled(false);
+		btnAuslesen.setEnabled(false);
 		moveA();
 		btnAusfuehren.setEnabled(true);
 		btnAblauf.setEnabled(true);
 		btnVerbinden.setEnabled(true);
 		mntmVerbindungstest.setEnabled(true);
+		btnSetzen.setEnabled(true);
+		btnAuslesen.setEnabled(true);
 	    }
 
 	    if (counter > 15) {
@@ -2002,8 +2012,9 @@ public class Software extends JFrame implements Runnable {
 	aktuelleTelemetrie = myRobot.getTelemetrie();
 
 	disconnect();
-	// textArea.append("Bewegung beendet. Sie hat " + dur.toMillis() + " ms
-	// gedauert.\n");
+
+	textArea.append("Ausführen beendet\n**************************\n");
+
 	isRunningP = false;
     }
 

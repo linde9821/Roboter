@@ -14,4 +14,11 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>linux32</name>
+			<type>2</type>
+			<location>C:/Users/Moritz/Downloads/DynamixelSDK-master/c/build/linux32</location>
+		</link>
+	</linkedResources>
 </projectDescription>
