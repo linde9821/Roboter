@@ -1,0 +1,503 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="EclipseModuleManager">
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/aix-ppc.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/aix-ppc64.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/android-aarch64.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/android-arm.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/android-armv7.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/android-mips.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/android-mips64.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/android-x86.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/android-x86-64.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/darwin.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/freebsd-x86.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/freebsd-x86-64.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/linux-aarch64.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/linux-arm.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/linux-armel.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/linux-ia64.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/linux-mips64el.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/linux-ppc.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/linux-ppc64.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/linux-ppc64le.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/linux-s390x.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/linux-sparcv9.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/linux-x86.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/linux-x86-64.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/openbsd-x86.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/openbsd-x86-64.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/out-of-date.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/sunos-sparc.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/sunos-sparcv9.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/sunos-x86.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/sunos-x86-64.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/w32ce-arm.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/win32-x86.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/win32-x86-64.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/test/dom4j-1.6.1.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/test/guava-11.0.2.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/test/javassist-3.12.1.GA.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/test/reflections-0.9.8.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/test/slf4j-api-1.6.1.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/ant.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/bsh.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/clover.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/hamcrest-core-1.3.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/junit.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/maven-ant-tasks-2.1.3.jar" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/DynamixelSDK-master/java/dynamixel_functions_java/x64" />
+    <libelement value="file://$MODULE_DIR$/../../../Java/libarys/jna-4.5.0.jar" />
+    <libelement value="file://jxl.jar" />
+    <varelement var="file://$USER_HOME$/Downloads/DynamixelSDK-master/c/build/linux32" kind="linksrc:" value="linux32" />
+    <src_description expected_position="1">
+      <src_folder value="file://$MODULE_DIR$/src" expected_position="1" />
+      <src_folder value="file://$USER_HOME$/Downloads/DynamixelSDK-master/c/build/linux32" expected_position="2" />
+    </src_description>
+  </component>
+  <component name="NewModuleRootManager">
+    <output url="file://$MODULE_DIR$/bin" />
+    <exclude-output />
+    <content url="file://$USER_HOME$/Downloads/DynamixelSDK-master/c/build/linux32">
+      <sourceFolder url="file://$USER_HOME$/Downloads/DynamixelSDK-master/c/build/linux32" isTestSource="false" />
+    </content>
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library" exported="">
+      <library name="aix-ppc.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/aix-ppc.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="aix-ppc64.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/aix-ppc64.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="android-aarch64.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/android-aarch64.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="android-arm.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/android-arm.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="android-armv7.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/android-armv7.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="android-mips.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/android-mips.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="android-mips64.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/android-mips64.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="android-x86.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/android-x86.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="android-x86-64.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/android-x86-64.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="darwin.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/darwin.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="freebsd-x86.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/freebsd-x86.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="freebsd-x86-64.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/freebsd-x86-64.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="linux-aarch64.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/linux-aarch64.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="linux-arm.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/linux-arm.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="linux-armel.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/linux-armel.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="linux-ia64.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/linux-ia64.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="linux-mips64el.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/linux-mips64el.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="linux-ppc.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/linux-ppc.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="linux-ppc64.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/linux-ppc64.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="linux-ppc64le.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/linux-ppc64le.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="linux-s390x.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/linux-s390x.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="linux-sparcv9.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/linux-sparcv9.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="linux-x86.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/linux-x86.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="linux-x86-64.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/linux-x86-64.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="openbsd-x86.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/openbsd-x86.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="openbsd-x86-64.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/openbsd-x86-64.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="out-of-date.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/out-of-date.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="sunos-sparc.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/sunos-sparc.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="sunos-sparcv9.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/sunos-sparcv9.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="sunos-x86.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/sunos-x86.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="sunos-x86-64.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/sunos-x86-64.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="w32ce-arm.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/w32ce-arm.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="win32-x86.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/win32-x86.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="win32-x86-64.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/native/win32-x86-64.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="dom4j-1.6.1.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/test/dom4j-1.6.1.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="guava-11.0.2.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/test/guava-11.0.2.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="javassist-3.12.1.GA.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/test/javassist-3.12.1.GA.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="reflections-0.9.8.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/test/reflections-0.9.8.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="slf4j-api-1.6.1.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/test/slf4j-api-1.6.1.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="ant.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/ant.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="bsh.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/bsh.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="clover.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/clover.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="hamcrest-core-1.3.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/hamcrest-core-1.3.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="junit.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/junit.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="maven-ant-tasks-2.1.3.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-master/lib/maven-ant-tasks-2.1.3.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="x64">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/DynamixelSDK-master/java/dynamixel_functions_java/x64" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="jna-4.5.0.jar">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../Java/libarys/jna-4.5.0.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="jxl.jar">
+        <CLASSES>
+          <root url="file://jxl.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module" module-name="libary" exported="" />
+  </component>
+</module>
