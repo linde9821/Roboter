@@ -5,11 +5,11 @@
  ToDO:
  -Dynamixel Bibilothek einbinden																							
  -Dynamixel Servos ansteuern																								
- -Schnittstelle für die Eingabe von Befehlen zur Laufzeit																																							
- -die Positionen der Bauteile wärend und nach einer Operation berechnen (Formeln müssen noch entwickelt werden)
- -Maximalwerte für alle Motorenfestlegen und vor einer Bewegung prüfen 
+ -Schnittstelle fï¿½r die Eingabe von Befehlen zur Laufzeit																																							
+ -die Positionen der Bauteile wï¿½rend und nach einer Operation berechnen (Formeln mï¿½ssen noch entwickelt werden)
+ -Maximalwerte fï¿½r alle Motorenfestlegen und vor einer Bewegung prï¿½fen 
 
- -Programmfunktionalität testen 
+ -Programmfunktionalitï¿½t testen 
 	-der Ablauf von Folgeoperationen  
 	-
  -erstellen der Struktogramm und sonstiger Dokumentationen 
@@ -17,17 +17,17 @@
  -argument einbauen das ein Changelog ausgibt 
 
  Erledigt:
- -Werte für die real-Längen der Arme eintragen			
- -Testen der Methodenfunktionalität		
+ -Werte fï¿½r die real-Lï¿½ngen der Arme eintragen			
+ -Testen der Methodenfunktionalitï¿½t		
  -Umrechnen der Motorenwerte (0-4000) in Grad
- -überprüfen ob die Konstruktoren von der Klasse roboter korrekt implimentiert sind 
+ -ï¿½berprï¿½fen ob die Konstruktoren von der Klasse roboter korrekt implimentiert sind 
  -Java implimentierung 
  
  Verschoben:
  -implimentieren der script-Klasse		
  -nach Fertigstellung der script-Klasse einige Standart-Scripts vorbereiten 
  -Logfile 
- -keine Sprachsolität im Programm (ändern)
+ -keine Sprachsolitï¿½t im Programm (ï¿½ndern)
  
  
  Sonstiges:
@@ -41,16 +41,16 @@
  -Erweitern der robot-Klasse
   	-neue statische Konstanten und deren Ausgabe 
   	-Erweitern der Methode Testausgabe
-  	-einfache Prüfung ob ein Punkt ansteuerbar ist (basierend auf dem Betrag des Punktes zum Ursprung und der maximalen Spannweite der Arme)
+  	-einfache Prï¿½fung ob ein Punkt ansteuerbar ist (basierend auf dem Betrag des Punktes zum Ursprung und der maximalen Spannweite der Arme)
  -allgeime Erweiterungen des Programms 
  
  Version 0.2.3 Java-Version
  -Bugfixing verschiedener Ausgaben des Programms aufgrund der Java-Poertierung 
- -löschen der roboter-Klasse zum testen und deren neu implimentieren und erweiterung in der test-Klasse
+ -lï¿½schen der roboter-Klasse zum testen und deren neu implimentieren und erweiterung in der test-Klasse
  -Erweiterung des Anwenderdialogs in der Commandpromp (funktioniert nun mehr wie ein Befehl der Commandpromp)
  -Erweitern der Vektor-Klasse: 
  	betrag(punkt begin, punkt ende) : static double - vektor 
- -Readme hinzugefügt 
+ -Readme hinzugefï¿½gt 
  
  Version 0.2.2 Java-Version:
  -Portierung als Java Programm
@@ -59,11 +59,11 @@
 
  Version 0.2.1
  -Bugfixes 
- -implimentierun der verschiedener Konstruktoren für die vektor-Klasse 
+ -implimentierun der verschiedener Konstruktoren fï¿½r die vektor-Klasse 
  -implimentieren von Methoden zur Umrechnung von Grad und Serv 
  
  Version 0.2
- -implimentierung der Methodenfunktionalität 
+ -implimentierung der Methodenfunktionalitï¿½t 
 
  Version 0.1
  -implimentierung der Klassenstruktur 
@@ -71,87 +71,87 @@
 
 package testprogramme;
 
-import roboter.RoboterException;
 import Punkt.Punkt;
 import roboter.Robot;
+import roboter.RoboterException;
 
 public class test {
     public static final String VERSION = "0.2.6 Java-Version";
 
     public static void main(String[] args) throws RoboterException {
 
-	if (args.length == 0) {
-	    System.out.println(
-		    "Fehler: Ungültiger Syntax. Es wurden keine x-, y- und z-Argument angegben.\nGeben Sie \"java roboter.roboter ?\" ein, um die Syntax anzuzeigen.");
-	    System.exit(0);
-	} else if (args[0].charAt(0) == '?') {
-	    System.out.println(
-		    "Beschreibung:\n    Dieses Programm dient zum Testen der Module des Roboterprojektes, durch die Eingabe eines biebigen Punktes. Ohne Motoransteuerung.");
-	    System.out.println("Parameterliste:\n    ?    help        Zeigt die Hilfe an.\n");
-	    System.out.println(
-		    "    [x] [y] [z]    Punktkoordinaten        Starten das Programm für die eingegebenen Argumente.");
-	    System.out.println(
-		    "    0    Beispielrechnung        Führt Beispeilprogrammablauf zum Punkt 100; 100; 10 aus.");
-	    System.out.println("Beispiel:");
-	    System.out.println(
-		    "java roboter.roboter 200 100 40		Beispieleingabe für einen Programmstart zum Punkt 200; 100; 40");
-	} else if (args[0].charAt(0) == '0') {
-	    System.out.println("Version: " + VERSION);
+        if (args.length == 0) {
+            System.out.println(
+                    "Fehler: Ungï¿½ltiger Syntax. Es wurden keine x-, y- und z-Argument angegben.\nGeben Sie \"java roboter.roboter ?\" ein, um die Syntax anzuzeigen.");
+            System.exit(0);
+        } else if (args[0].charAt(0) == '?') {
+            System.out.println(
+                    "Beschreibung:\n    Dieses Programm dient zum Testen der Module des Roboterprojektes, durch die Eingabe eines biebigen Punktes. Ohne Motoransteuerung.");
+            System.out.println("Parameterliste:\n    ?    help        Zeigt die Hilfe an.\n");
+            System.out.println(
+                    "    [x] [y] [z]    Punktkoordinaten        Starten das Programm fï¿½r die eingegebenen Argumente.");
+            System.out.println(
+                    "    0    Beispielrechnung        Fï¿½hrt Beispeilprogrammablauf zum Punkt 100; 100; 10 aus.");
+            System.out.println("Beispiel:");
+            System.out.println(
+                    "java roboter.roboter 200 100 40		Beispieleingabe fï¿½r einen Programmstart zum Punkt 200; 100; 40");
+        } else if (args[0].charAt(0) == '0') {
+            System.out.println("Version: " + VERSION);
 
-	    Robot myRobot = new Robot("COM3");
-	    myRobot.statusausgabe();
+            Robot myRobot = new Robot("COM3");
+            myRobot.statusausgabe();
 
-	    myRobot.moveto(new Punkt(100, 100, 10));
+            myRobot.moveto(new Punkt(100, 100, 10));
 
-	    myRobot.statusausgabe();
+            myRobot.statusausgabe();
 
-	} else {
-	    int x, y, z;
+        } else {
+            int x, y, z;
 
-	    Robot myRobot = new Robot("COM3");
+            Robot myRobot = new Robot("COM3");
 
 
-	    System.out.println("Version: " + VERSION);
+            System.out.println("Version: " + VERSION);
 
-	    x = Integer.parseInt(args[0]);
-	    y = Integer.parseInt(args[1]);
-	    z = Integer.parseInt(args[2]);
+            x = Integer.parseInt(args[0]);
+            y = Integer.parseInt(args[1]);
+            z = Integer.parseInt(args[2]);
 
-	    System.out.println(
-		    "\nDer Ablauf wird Simuliert für eine Bewegung zum Punkt P(" + x + "|" + y + "|" + z + ")\n");
+            System.out.println(
+                    "\nDer Ablauf wird Simuliert fï¿½r eine Bewegung zum Punkt P(" + x + "|" + y + "|" + z + ")\n");
 
-	    //myRobot.testausgabe();
+            //myRobot.testausgabe();
 
-	    /*
-	     * myRobot.setup("POS-1");
-	     * 
-	     * myRobot.testausgabe();
-	     * 
-	     * myRobot.setup("T-Pos");
-	     * 
-	     * myRobot.testausgabe();
-	     * 
-	     * 
-	     * myRobot.setup("POS-1");
-	     * 
-	     * myRobot.statusausgabe();
-	     */
+            /*
+             * myRobot.setup("POS-1");
+             *
+             * myRobot.testausgabe();
+             *
+             * myRobot.setup("T-Pos");
+             *
+             * myRobot.testausgabe();
+             *
+             *
+             * myRobot.setup("POS-1");
+             *
+             * myRobot.statusausgabe();
+             */
 
-	    myRobot.statusausgabe();
+            myRobot.statusausgabe();
 
-	    if (myRobot.moveto(new Punkt(x, y, z)) == false)
-		System.out.println("Der Punkt ist nicht ansteuerbar!\n");
-	    else
-		System.out.println("Der Punkt ist ansteuerbar!\n");
+            if (myRobot.moveto(new Punkt(x, y, z)) == false)
+                System.out.println("Der Punkt ist nicht ansteuerbar!\n");
+            else
+                System.out.println("Der Punkt ist ansteuerbar!\n");
 
-	    myRobot.statusausgabe();
+            myRobot.statusausgabe();
 
-	    /*
-	     * myRobot.zurücksetzten();
-	     * 
-	     * myRobot.statusausgabe();
-	     */
-	}
+            /*
+             * myRobot.zurï¿½cksetzten();
+             *
+             * myRobot.statusausgabe();
+             */
+        }
 
     }
 }

@@ -1,5 +1,10 @@
 package roboter;
 
+import Punkt.Punkt;
+import dynamixel.Dynamixel;
+import telemetrie.Telemetrie;
+
+import javax.swing.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -9,12 +14,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-
-import javax.swing.JOptionPane;
-
-import Punkt.Punkt;
-import dynamixel.Dynamixel;
-import telemetrie.Telemetrie;
 
 public class Robot implements Cloneable {
     public static final String version = "robot 3.0"; // current version
@@ -39,61 +38,39 @@ public class Robot implements Cloneable {
     public final static short maxVoltage = 15000;
 
     private static int amount = 0;
-    int id;
-
-    boolean stop = false;
-
-    public boolean isStop() {
-        return stop;
-    }
-
-    public void setStop(boolean stop) {
-        this.stop = stop;
-    }
-
     private static boolean telemetrieerfassung;
-    private ArrayList<Telemetrie> robotTelemetrie;
-
-    // goal values for the angels
-    private double grad1, grad2, grad3;
-
+    // [in Source Code]-Settings
+    private final boolean allowTelemetrieDuringMovment = true;
     public String moveStr;
-
+    int id;
+    boolean stop = false;
     // Dynamixel
     // Control table address
     short ADDR_MX_TORQUE_ENABLE = 24; // Control table address is different in Dynamixel model
     short ADDR_MX_GOAL_POSITION = 30;
     short ADDR_MX_PRESENT_POSITION = 36;
-
     short ADDR_Present_Voltage = 42;
     short ADDR_Present_Temp = 43;
     short ADDR_Moving_Speed_Low = 32;
-
-    // [in Source Code]-Settings
-    private final boolean allowTelemetrieDuringMovment = true;
-
     // Protocol version
     int PROTOCOL_VERSION = 1; // See which protocol version is used in the Dynamixel
-
     // IDs for the Dynamixels
     byte[] DXL_ID = new byte[]{0, 1, 2, 3, 4, 5};
-
     int BAUDRATE = 1000000;
     String DEVICENAME = "COM3"; // Check which port is being used on your controller Windows: "COM1-COM5"
-
     byte TORQUE_ENABLE = 1; // Value for enabling the torque
     byte TORQUE_DISABLE = 0; // Value for disabling the torque
     int DXL_MOVING_STATUS_THRESHOLD = 50; // Dynamixel moving status threshold
-
     int COMM_SUCCESS = 0; // Communication Success result value
     int COMM_TX_FAIL = -1001; // Communication Tx Failed
-
-    private Dynamixel dynamixel;// Dynamixel class
     int port_num;// Port number (normaly 0)
     int dxl_comm_result;
     byte dxl_error;
     short dxl_present_position;// Check if Really needed!
-
+    private ArrayList<Telemetrie> robotTelemetrie;
+    // goal values for the angels
+    private double grad1, grad2, grad3;
+    private Dynamixel dynamixel;// Dynamixel class
     // constructor
     public Robot(String temp) throws RoboterException {
         id = amount;
@@ -179,9 +156,109 @@ public class Robot implements Cloneable {
         }
         writeToProtocol("Erfolgreich initialisiert");
     }
-
     public Robot() throws RoboterException {
         this("SIM");
+    }
+
+    public static boolean isTelemetrieerfassung() {
+        return telemetrieerfassung;
+    }
+
+    public static void setTelemetrieerfassung(boolean tf) {
+        telemetrieerfassung = tf;
+    }
+
+    // simulates values for servors and return an object with the calulated values
+    public static Robot sim(Punkt Zielpunkt) throws RoboterException {
+        Robot simRobot = null;
+        try {
+            simRobot = new Robot();
+        } catch (RoboterException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        simRobot.writeToProtocol(
+                "Simulation f�r P(" + Zielpunkt.getX() + "|" + Zielpunkt.getY() + "|" + Zielpunkt.getZ() + ")");
+
+        boolean ansteuerbar;
+
+        ansteuerbar = simRobot.calc(Zielpunkt);
+
+        if (ansteuerbar) {
+            simRobot.grad2 = graToUni(330) - simRobot.grad2;
+            simRobot.grad3 -= graToUni(30);
+
+            StringBuffer strbf = new StringBuffer(simRobot.moveStr);
+
+            // Winkelausgabe
+            System.out.println("----------------\nCONSOLE-LOG sim()\n----------------");
+            System.out.println("Winkelwerte (am Ende):\n");
+            System.out.println("M1: " + simRobot.grad1);
+            System.out.println("M2: " + simRobot.grad2);
+            System.out.println("M3: " + simRobot.grad3);
+            System.out.println("----------------\n");
+
+            // Einheitsausgabe
+            System.out.println("----------------\nCONSOLE-LOG sim()\n----------------");
+            System.out.println("Einheiten (am Ende):\n");
+            System.out.println("M1: " + (short) simRobot.grad1);
+            System.out.println("M2: " + (short) simRobot.grad2);
+            System.out.println("M3: " + (short) simRobot.grad3);
+            System.out.println("----------------\n");
+
+            DecimalFormat f = new DecimalFormat("0.00");
+            strbf = strbf.append("\nWinkelwerte(am Ende):\n" + "M1: " + f.format(simRobot.grad1) + "�\nM2: "
+                    + f.format(simRobot.grad2) + "�\nM3: " + f.format(simRobot.grad3) + "�");
+
+            strbf = strbf.append("\nEinheitswerte(am Ende):\n" + "M1: " + (short) simRobot.grad1 + "u\nM2: "
+                    + (short) simRobot.grad2 + "u\nM3: " + (short) simRobot.grad3 + "u");
+
+            simRobot.moveStr = strbf.toString();
+
+            simRobot.writeToProtocol(simRobot.moveStr);
+        } else {
+            simRobot.writeToProtocol("P ist nicht ansteuerbar");
+        }
+
+        // not best solution
+        simRobot.decreaseAmount();
+
+        return simRobot;
+    }
+
+    // checks if point is usabel
+    public static boolean ansteuerbarkeit(Punkt Zielpunkt) {
+        double h = Math.sqrt(Zielpunkt.getX() * Zielpunkt.getX() + Zielpunkt.getY() * Zielpunkt.getY());
+        double a = B1_DIAMATER / 2;
+
+        if (h <= a)
+            return false;
+        else if (((h - a) * (h - a)) + Zielpunkt.getZ() * Zielpunkt.getZ() >= (B2_LENGTH + B3_LENGTH)
+                * (B2_LENGTH + B3_LENGTH))
+            return false;
+        else if (Zielpunkt.getZ() <= -BODENEBENE)
+            return false;
+
+        return true;
+    }
+
+    // from grad to units
+    public static double graToUni(double gra) {
+        return gra / 0.29;
+    }
+
+    // from units to grad
+    public static double uniToGra(double gra) {
+        return gra * 0.29;
+    }
+
+    public boolean isStop() {
+        return stop;
+    }
+
+    public void setStop(boolean stop) {
+        this.stop = stop;
     }
 
     // clones current entity
@@ -204,14 +281,6 @@ public class Robot implements Cloneable {
     public ArrayList<Telemetrie> getTelemetrie() {
         ArrayList<Telemetrie> temp = new ArrayList<Telemetrie>(robotTelemetrie);
         return temp;
-    }
-
-    public static boolean isTelemetrieerfassung() {
-        return telemetrieerfassung;
-    }
-
-    public static void setTelemetrieerfassung(boolean tf) {
-        telemetrieerfassung = tf;
     }
 
     // read and write
@@ -324,65 +393,6 @@ public class Robot implements Cloneable {
 
         // Wenn beendet
         return true;
-    }
-
-    // simulates values for servors and return an object with the calulated values
-    public static Robot sim(Punkt Zielpunkt) throws RoboterException {
-        Robot simRobot = null;
-        try {
-            simRobot = new Robot();
-        } catch (RoboterException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        simRobot.writeToProtocol(
-                "Simulation f�r P(" + Zielpunkt.getX() + "|" + Zielpunkt.getY() + "|" + Zielpunkt.getZ() + ")");
-
-        boolean ansteuerbar;
-
-        ansteuerbar = simRobot.calc(Zielpunkt);
-
-        if (ansteuerbar) {
-            simRobot.grad2 = graToUni(330) - simRobot.grad2;
-            simRobot.grad3 -= graToUni(30);
-
-            StringBuffer strbf = new StringBuffer(simRobot.moveStr);
-
-            // Winkelausgabe
-            System.out.println("----------------\nCONSOLE-LOG sim()\n----------------");
-            System.out.println("Winkelwerte (am Ende):\n");
-            System.out.println("M1: " + simRobot.grad1);
-            System.out.println("M2: " + simRobot.grad2);
-            System.out.println("M3: " + simRobot.grad3);
-            System.out.println("----------------\n");
-
-            // Einheitsausgabe
-            System.out.println("----------------\nCONSOLE-LOG sim()\n----------------");
-            System.out.println("Einheiten (am Ende):\n");
-            System.out.println("M1: " + (short) simRobot.grad1);
-            System.out.println("M2: " + (short) simRobot.grad2);
-            System.out.println("M3: " + (short) simRobot.grad3);
-            System.out.println("----------------\n");
-
-            DecimalFormat f = new DecimalFormat("0.00");
-            strbf = strbf.append("\nWinkelwerte(am Ende):\n" + "M1: " + f.format(simRobot.grad1) + "�\nM2: "
-                    + f.format(simRobot.grad2) + "�\nM3: " + f.format(simRobot.grad3) + "�");
-
-            strbf = strbf.append("\nEinheitswerte(am Ende):\n" + "M1: " + (short) simRobot.grad1 + "u\nM2: "
-                    + (short) simRobot.grad2 + "u\nM3: " + (short) simRobot.grad3 + "u");
-
-            simRobot.moveStr = strbf.toString();
-
-            simRobot.writeToProtocol(simRobot.moveStr);
-        } else {
-            simRobot.writeToProtocol("P ist nicht ansteuerbar");
-        }
-
-        // not best solution
-        simRobot.decreaseAmount();
-
-        return simRobot;
     }
 
     // gives status update in console (many parts of it dont work and are not
@@ -532,22 +542,6 @@ public class Robot implements Cloneable {
         return true;
     }
 
-    // checks if point is usabel
-    public static boolean ansteuerbarkeit(Punkt Zielpunkt) {
-        double h = Math.sqrt(Zielpunkt.getX() * Zielpunkt.getX() + Zielpunkt.getY() * Zielpunkt.getY());
-        double a = B1_DIAMATER / 2;
-
-        if (h <= a)
-            return false;
-        else if (((h - a) * (h - a)) + Zielpunkt.getZ() * Zielpunkt.getZ() >= (B2_LENGTH + B3_LENGTH)
-                * (B2_LENGTH + B3_LENGTH))
-            return false;
-        else if (Zielpunkt.getZ() <= -BODENEBENE)
-            return false;
-
-        return true;
-    }
-
     // directly controls the disconnection (lowest point! very important)
     public boolean manualDisconnect() throws RoboterException {
         try {
@@ -563,16 +557,6 @@ public class Robot implements Cloneable {
         } finally {
             decreaseAmount();
         }
-    }
-
-    // from grad to units
-    public static double graToUni(double gra) {
-        return gra / 0.29;
-    }
-
-    // from units to grad
-    public static double uniToGra(double gra) {
-        return gra * 0.29;
     }
 
     // addes current telemetrie to telemetrie-list
